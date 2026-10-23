@@ -409,11 +409,9 @@ export function computeLine(cfg: LineConfig): CalcResult {
   const cnPerKm = cn * 1000;
   const xcOhmKm = 1 / (w * cnPerKm);
   const VLL = cfg.voltageKV * 1e3;
-  const VLN = VLL / Math.SQRT2 / Math.sqrt(2) * Math.sqrt(2); // = VLL / sqrt(3) below
   const vln = VLL / Math.sqrt(3);
   const ichgPerKm = w * cnPerKm * vln;
   const qcPerKm = w * cnPerKm * VLL * VLL;
-  void VLN;
 
   steps.push({
     section: "cap",
