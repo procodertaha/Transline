@@ -8,14 +8,98 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Activity, Moon, Sun } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { cn } from "@/lib/utils";
+
+const THEME_SCRIPT = `try{var t=localStorage.getItem('transline-theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+
+function ThemeToggle() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains("dark"));
+  }, []);
+  const toggle = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try {
+      localStorage.setItem("transline-theme", next ? "dark" : "light");
+    } catch {
+      /* ignore */
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label="Toggle dark mode"
+      className="rounded-lg border border-border bg-background p-2 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+    >
+      {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+    </button>
+  );
+}
+
+function Header() {
+  const links = [
+    { to: "/", label: "Calculator" },
+    { to: "/learn", label: "Learn" },
+    { to: "/stability", label: "Stability" },
+  ] as const;
+  return (
+    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Activity className="size-4.5" />
+          </span>
+          <span className="text-base font-bold tracking-tight">
+            TransLine{" "}
+            <span className="font-normal text-muted-foreground">Calculator</span>
+          </span>
+        </Link>
+        <nav className="flex items-center gap-1">
+          {links.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground [&.active]:bg-secondary [&.active]:text-foreground"
+              activeOptions={{ exact: l.to === "/" }}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <ThemeToggle />
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-border bg-secondary/40">
+      <div className="mx-auto max-w-6xl px-4 py-6 text-xs text-muted-foreground">
+        <p className="font-medium text-foreground/80">
+          TransLine Calculator — Transmission Line Parameters
+        </p>
+        <p className="mt-1">
+          Based on Grainger &amp; Stevenson, <em>Power System Analysis</em>,
+          McGraw-Hill — Ch. 4 &amp; 5 (line inductance and capacitance), Ch. 16
+          (power system stability). All calculations run in your browser.
+        </p>
+      </div>
+    </footer>
+  );
+}
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
@@ -43,7 +127,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           This page didn't load
@@ -78,21 +162,41 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "TransLine Calculator" },
+      {
+        name: "description",
+        content:
+          "Educational calculator for transmission line inductance and capacitance, with step-by-step worked solutions.",
+      },
+      { name: "author", content: "TransLine Calculator" },
+      { property: "og:title", content: "TransLine Calculator" },
+      {
+        property: "og:description",
+        content:
+          "Educational calculator for transmission line inductance and capacitance.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap",
       },
+      { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+    ],
+    scripts: [
+      {
+        // Set the theme class before first paint to avoid a flash.
+        children: THEME_SCRIPT,
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -120,8 +224,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
     </QueryClientProvider>
   );
 }
+
+export { cn };
