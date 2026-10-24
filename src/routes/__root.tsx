@@ -13,7 +13,6 @@ import { Activity, Moon, Sun } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { cn } from "@/lib/utils";
 
 const THEME_SCRIPT = `try{var t=localStorage.getItem('transline-theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
 
@@ -192,12 +191,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
-    scripts: [
-      {
-        // Set the theme class before first paint to avoid a flash.
-        children: THEME_SCRIPT,
-      },
-    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -209,6 +202,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -235,5 +229,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
-export { cn };
