@@ -113,8 +113,8 @@ function Learn() {
         </p>
         <TeX
           block
-          math={`D_{s_x} = \\sqrt[n^2]{\\prod \\text{(all distances within side x, incl. } D_s)}}
-          />
+          math={`D_{s_x} = \\sqrt[n^{2}]{\\prod \\text{all distances within side x (incl. } D_s \\text{)}}`}
+        />
         <TeX
           block
           math={`D_m = \\sqrt[mn]{\\prod \\text{(all distances between side x and side y)}}`}
