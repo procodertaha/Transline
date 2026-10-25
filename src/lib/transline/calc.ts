@@ -26,15 +26,15 @@ export interface CalcResult {
   deq: number; // three-phase: GMD; single-phase: GMD between sides
   dsEqInd: number;
   dsEqCap: number;
-  lPhase?: number; // H/m per phase (three-phase)
-  lX?: number;
-  lY?: number;
-  lLoop?: number; // H/m loop (single-phase)
+  lPhase?: number | undefined; // H/m per phase (three-phase)
+  lX?: number | undefined;
+  lY?: number | undefined;
+  lLoop?: number | undefined; // H/m loop (single-phase)
   lPrim: number; // primary inductance H/m (loop for single-phase, per phase for three)
-  cAb?: number; // F/m line-to-line (single-phase)
+  cAb?: number | undefined; // F/m line-to-line (single-phase)
   cn: number; // F/m line-to-neutral
-  cnEarth?: number;
-  earthDetail?: { P: number; Hm: number };
+  cnEarth?: number | undefined;
+  earthDetail?: { P: number; Hm: number } | undefined;
   f: number;
   lPerKm: number;
   lPerMile: number;
