@@ -26,7 +26,7 @@ describe("self-check example (Grainger & Stevenson)", () => {
 
   it("uses r (not 0.7788 r) as the capacitance GMR", () => {
     expect(res.gmrCap).toBe(0.01);
-    expect(res.dsEqCap).toBe(0.01);
+    expect(res.dsEqCap).toBeCloseTo(0.01, 12);
   });
 });
 
