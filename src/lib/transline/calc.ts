@@ -7,7 +7,7 @@ export interface Step {
   section: "common" | "ind" | "cap";
   title: string;
   tex: string;
-  note?: string;
+  note?: string | undefined;
 }
 
 export interface CalcResult {
@@ -74,7 +74,7 @@ export function validate(cfg: LineConfig, coords: Vec2[]): string[] {
   }
   for (let i = 0; i < n; i++)
     for (let j = i + 1; j < n; j++) {
-      const d = dist(coords[i], coords[j]);
+      const d = dist(coords[i]!, coords[j]!);
       if (!(d > 2 * cfg.radius))
         errors.push(
           `Distance ${labels[i]}–${labels[j]} (${d.toFixed(3)} m) must exceed the conductor diameter (${(2 * cfg.radius).toFixed(3)} m).`,
@@ -92,8 +92,8 @@ function conductorGmrInd(cfg: LineConfig): { value: number; note: string } {
       return { value: SOLID_FACTOR * r, note: "solid round: Ds = r' = e^(−1/4)·r = 0.7788 r" };
     case "stranded":
       return {
-        value: STRAND_FACTOR[cfg.strands] * r,
-        note: `${cfg.strands}-stranded: Ds = ${STRAND_FACTOR[cfg.strands]}·r`,
+        value: STRAND_FACTOR[cfg.strands]! * r,
+        note: `${cfg.strands}-stranded: Ds = ${STRAND_FACTOR[cfg.strands]!}·r`,
       };
     case "acsr":
       return { value: cfg.acsrDs, note: "ACSR: Ds entered from the manufacturer table" };
@@ -121,13 +121,13 @@ function conductorGmrCap(cfg: LineConfig): number {
 /** GMR of a phase group: 1 member → self; 2 members → sqrt(self × mutual). */
 function groupGmr(members: number[], memberGmr: number, coords: Vec2[]): number {
   if (members.length === 1) return memberGmr;
-  return Math.sqrt(memberGmr * dist(coords[members[0]], coords[members[1]]));
+  return Math.sqrt(memberGmr * dist(coords[members[0]]!, coords[members[1]]!));
 }
 
 /** GMD between two groups: (product of all cross distances)^(1/(n·m)). */
 function gmdBetween(gx: number[], gy: number[], coords: Vec2[]): number {
   let prod = 1;
-  for (const i of gx) for (const j of gy) prod *= dist(coords[i], coords[j]);
+  for (const i of gx) for (const j of gy) prod *= dist(coords[i]!, coords[j]!);
   return prod ** (1 / (gx.length * gy.length));
 }
 
@@ -143,7 +143,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
   const distances: number[][] = [];
   for (let i = 0; i < n; i++) {
     distances.push([]);
-    for (let j = 0; j < n; j++) distances[i].push(dist(coords[i], coords[j]));
+    for (let j = 0; j < n; j++) distances[i]!.push(dist(coords[i]!, coords[j]!));
   }
 
   const gmrIndRes = conductorGmrInd(cfg);
@@ -167,14 +167,14 @@ export function computeLine(cfg: LineConfig): CalcResult {
   let deq: number;
   if (cfg.system === "three") {
     pairGmds = [
-      gmdBetween(groups[0], groups[1], coords),
-      gmdBetween(groups[1], groups[2], coords),
-      gmdBetween(groups[2], groups[0], coords),
+      gmdBetween(groups[0]!, groups[1]!, coords),
+      gmdBetween(groups[1]!, groups[2]!, coords),
+      gmdBetween(groups[2]!, groups[0]!, coords),
     ];
-    deq = Math.cbrt(pairGmds[0] * pairGmds[1] * pairGmds[2]);
+    deq = Math.cbrt(pairGmds[0]! * pairGmds[1]! * pairGmds[2]!);
   } else {
-    pairGmds = [gmdBetween(groups[0], groups[1], coords)];
-    deq = pairGmds[0];
+    pairGmds = [gmdBetween(groups[0]!, groups[1]!, coords)];
+    deq = pairGmds[0]!;
   }
   const dsEqInd = groupGmrInd.reduce((a, b) => a * b, 1) ** (1 / groups.length);
   const dsEqCap = groupGmrCap.reduce((a, b) => a * b, 1) ** (1 / groups.length);
@@ -205,7 +205,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
       tex:
         cfg.conductorType === "acsr"
           ? R`D_s = ${fmtTex(cfg.acsrDs)}\ \text{m}\quad (\text{from manufacturer table})`
-          : R`D_s = ${fmtTex(cfg.conductorType === "solid" ? 0.7788 : STRAND_FACTOR[cfg.strands])}\times r = ${fmtTex(cfg.conductorType === "solid" ? 0.7788 : STRAND_FACTOR[cfg.strands])}\times${fmtTex(rCm)}\ \text{cm} = ${unitM(gmrInd)}`,
+          : R`D_s = ${fmtTex(cfg.conductorType === "solid" ? 0.7788 : STRAND_FACTOR[cfg.strands]!)}\times r = ${fmtTex(cfg.conductorType === "solid" ? 0.7788 : STRAND_FACTOR[cfg.strands]!)}\times${fmtTex(rCm)}\ \text{cm} = ${unitM(gmrInd)}`,
     });
   }
 
@@ -213,11 +213,11 @@ export function computeLine(cfg: LineConfig): CalcResult {
   if (cfg.circuit === "double") {
     const pairsTex = groups
       .map((g, i) => {
-        const lab = labels[g[0]];
-        const lab2 = labels[g[1]];
-        const dAA = dist(coords[g[0]], coords[g[1]]);
-        const sym = ["A", "B", "C"][i] ?? ["X", "Y"][i];
-        return R`D_{s_{${sym}}} = \sqrt{D_s\,D_{${lab}${lab2}}} = \sqrt{${fmtTex(gmrInd)}\times${fmtTex(dAA)}} = ${unitM(groupGmrInd[i])}`;
+        const lab = labels[g[0]!];
+        const lab2 = labels[g[1]!];
+        const dAA = dist(coords[g[0]!], coords[g[1]!]);
+        const sym = ["A", "B", "C"][i] ?? String(i);
+        return R`D_{s_{${sym}}} = \sqrt{D_s\,D_{${lab}${lab2}}} = \sqrt{${fmtTex(gmrInd)}\times${fmtTex(dAA)}} = ${unitM(groupGmrInd[i]!)}`;
       })
       .join(" \\\\[4pt] ");
     steps.push({
@@ -234,12 +234,12 @@ export function computeLine(cfg: LineConfig): CalcResult {
     const gmdLine = cfg.circuit === "double"
       ? groups.map((g, i) => {
           const j = (i + 1) % 3;
-          const cross = groups[i].flatMap((a) => groups[j].map((b) => `${fmtTex(dist(coords[a], coords[b]))}`)).join("\\times");
+          const cross = groups[i]!.flatMap((a) => groups[j]!.map((b) => `${fmtTex(dist(coords[a], coords[b]))}`)).join("\\times");
           const labA = labels[groups[i][0]];
           const labB = labels[groups[j][0]];
-          return R`D_{${sym[i]}${sym[j]}} = \sqrt[${groups[i].length * groups[j].length}]{${cross}} = ${unitM(pairGmds[i])} \\[2pt] (${labA} \to ${labB})`;
+          return R`D_{${sym[i]}${sym[j]}} = \sqrt[${groups[i].length * groups[j].length}]{${cross}} = ${unitM(pairGmds[i]!)} \\[2pt] (${labA} \to ${labB})`;
         }).join(" \\\\[6pt] ")
-      : R`D_{AB} = ${fmtTex(pairGmds[0])}\\quad D_{BC} = ${fmtTex(pairGmds[1])}\\quad D_{CA} = ${fmtTex(pairGmds[2])}`;
+      : R`D_{AB} = ${fmtTex(pairGmds[0]!)}\\quad D_{BC} = ${fmtTex(pairGmds[1]!)}\\quad D_{CA} = ${fmtTex(pairGmds[2]!)}`;
     steps.push({
       section: "ind",
       title: "GMD between phases (Deq)",
@@ -249,7 +249,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
           : cfg.circuit === "single" && cfg.layout === "equilateral"
             ? "Equilateral spacing: Deq = D."
             : undefined,
-      tex: R`D_{eq} = \sqrt[3]{D_{AB}\,D_{BC}\,D_{CA}} = \sqrt[3]{${fmtTex(pairGmds[0])}\times${fmtTex(pairGmds[1])}\times${fmtTex(pairGmds[2])}} = ${unitM(deq)} \\[6pt] ${gmdLine}`,
+      tex: R`D_{eq} = \sqrt[3]{D_{AB}\,D_{BC}\,D_{CA}} = \sqrt[3]{${fmtTex(pairGmds[0]!)}\times${fmtTex(pairGmds[1]!)}\times${fmtTex(pairGmds[2]!)}} = ${unitM(deq)} \\[6pt] ${gmdLine}`,
     });
   } else {
     const cross = groups[0].flatMap((a) => groups[1].map((b) => `${fmtTex(dist(coords[a], coords[b]))}`)).join("\\times");
@@ -268,13 +268,13 @@ export function computeLine(cfg: LineConfig): CalcResult {
   if (cfg.system === "three") {
     lPhase = 2e-7 * Math.log(deq / dsEqInd);
   } else {
-    lX = 2e-7 * Math.log(deq / groupGmrInd[0]);
-    lY = 2e-7 * Math.log(deq / groupGmrInd[1]);
+    lX = 2e-7 * Math.log(deq / groupGmrInd[0]!);
+    lY = 2e-7 * Math.log(deq / groupGmrInd[1]!);
     lLoop = lX + lY;
   }
   const lPrim = cfg.system === "three" ? (lPhase as number) : (lLoop as number);
 
-  const lnIndTex = R`\ln\frac{${fmtTex(deq)}}{${fmtTex(cfg.system === "three" ? dsEqInd : groupGmrInd[0])}} = \ln(${fmtTex(deq / (cfg.system === "three" ? dsEqInd : groupGmrInd[0]))}) = ${fmtTex(Math.log(deq / (cfg.system === "three" ? dsEqInd : groupGmrInd[0])))}`;
+  const lnIndTex = R`\ln\frac{${fmtTex(deq)}}{${fmtTex(cfg.system === "three" ? dsEqInd : groupGmrInd[0]!)}} = \ln(${fmtTex(deq / (cfg.system === "three" ? dsEqInd : groupGmrInd[0]!))}) = ${fmtTex(Math.log(deq / (cfg.system === "three" ? dsEqInd : groupGmrInd[0]!)))}`;
 
   if (cfg.system === "three") {
     steps.push({
@@ -310,16 +310,16 @@ export function computeLine(cfg: LineConfig): CalcResult {
   if (cfg.system === "three") {
     cn = 2 * Math.PI * EPS0 / Math.log(deq / dsEqCap);
     if (cfg.earthEffect) {
-      const rep = groups.map((g) => coords[g[0]]);
+      const rep = groups.map((g) => coords[g[0]!]);
       const H = rep.map((p) => p.y);
       const d12 = dist(rep[0], rep[1]);
       const d23 = dist(rep[1], rep[2]);
       const d31 = dist(rep[2], rep[0]);
-      const H12 = Math.sqrt(d12 * d12 + 4 * H[0] * H[1]);
-      const H23 = Math.sqrt(d23 * d23 + 4 * H[1] * H[2]);
-      const H31 = Math.sqrt(d31 * d31 + 4 * H[2] * H[0]);
+      const H12 = Math.sqrt(d12 * d12 + 4 * H[0]! * H[1]!);
+      const H23 = Math.sqrt(d23 * d23 + 4 * H[1]! * H[2]!);
+      const H31 = Math.sqrt(d31 * d31 + 4 * H[2]! * H[0]!);
       const P = Math.cbrt(H12 * H23 * H31);
-      const Hm = Math.cbrt(H[0] * H[1] * H[2]);
+      const Hm = Math.cbrt(H[0]! * H[1]! * H[2]!);
       if (H.every((h) => h > 0)) {
         earthDetail = { P, Hm };
         cnEarth = (2 * Math.PI * EPS0) / (Math.log(deq / dsEqCap) - Math.log(P / Hm));
@@ -339,7 +339,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
       }
     }
   } else {
-    const gC = Math.sqrt(groupGmrCap[0] * groupGmrCap[1]);
+    const gC = Math.sqrt(groupGmrCap[0]! * groupGmrCap[1]!);
     cAb = Math.PI * EPS0 / Math.log(deq / gC);
     cn = 2 * cAb;
   }
@@ -358,18 +358,18 @@ export function computeLine(cfg: LineConfig): CalcResult {
       tex: R`C_{ab} = \frac{\pi\varepsilon_0}{\ln(D/r)} = \frac{\pi(8.854\times10^{-12})}{\ln(${fmtTex(deq / gmrCap)})} = ${fmtTex(cAb!)}\ \tfrac{\text{F}}{\text{m}} \\[6pt] C_n = 2C_{ab} = \frac{2\pi\varepsilon_0}{\ln(D/r)} = ${fmtTex(cn)}\ \tfrac{\text{F}}{\text{m}} = ${fmtTex(cn * 1e12)}\ \tfrac{\text{nF}}{\text{km}}`,
     });
   } else if (cfg.system === "single") {
-    const dxCap = dist(coords[groups[0][0]], coords[groups[0][1]]);
-    const dyCap = dist(coords[groups[1][0]], coords[groups[1][1]]);
+    const dxCap = dist(coords[groups[0]![0]!], coords[groups[0]![1]!]);
+    const dyCap = dist(coords[groups[1]![0]!], coords[groups[1]![1]!]);
     steps.push({
       section: "cap",
       title: "GMR for capacitance per side",
       note: "Replace Ds by r in the group GMR — the outer radius governs the external field.",
-      tex: R`D_{s_x}^C = \sqrt{r\,D_{aa'}} = \sqrt{${fmtTex(cfg.radius)}\times${fmtTex(dxCap)}} = ${unitM(groupGmrCap[0])},\quad D_{s_y}^C = \sqrt{r\,D_{bb'}} = ${unitM(groupGmrCap[1])}`,
+      tex: R`D_{s_x}^C = \sqrt{r\,D_{aa'}} = \sqrt{${fmtTex(cfg.radius)}\times${fmtTex(dxCap)}} = ${unitM(groupGmrCap[0]!)},\quad D_{s_y}^C = \sqrt{r\,D_{bb'}} = ${unitM(groupGmrCap[1]!)}`,
     });
     steps.push({
       section: "cap",
       title: "Capacitance line-to-line and line-to-neutral",
-      tex: R`C_{ab} = \frac{\pi\varepsilon_0}{\ln(D_m/\sqrt{D_{s_x}^C D_{s_y}^C})} = \frac{\pi(8.854\times10^{-12})}{\ln(${fmtTex(deq / Math.sqrt(groupGmrCap[0] * groupGmrCap[1]))})} = ${fmtTex(cAb!)}\ \tfrac{\text{F}}{\text{m}} \\[6pt] C_n = 2C_{ab} = ${fmtTex(cn)}\ \tfrac{\text{F}}{\text{m}} = ${fmtTex(cn * 1e12)}\ \tfrac{\text{nF}}{\text{km}}`,
+      tex: R`C_{ab} = \frac{\pi\varepsilon_0}{\ln(D_m/\sqrt{D_{s_x}^C D_{s_y}^C})} = \frac{\pi(8.854\times10^{-12})}{\ln(${fmtTex(deq / Math.sqrt(groupGmrCap[0]! * groupGmrCap[1]!))})} = ${fmtTex(cAb!)}\ \tfrac{\text{F}}{\text{m}} \\[6pt] C_n = 2C_{ab} = ${fmtTex(cn)}\ \tfrac{\text{F}}{\text{m}} = ${fmtTex(cn * 1e12)}\ \tfrac{\text{nF}}{\text{km}}`,
     });
   } else {
     steps.push({
@@ -392,9 +392,9 @@ export function computeLine(cfg: LineConfig): CalcResult {
         title: "Group GMR for capacitance",
         tex: groups
           .map((g, i) => {
-            const dAA = dist(coords[g[0]], coords[g[1]]);
+            const dAA = dist(coords[g[0]!], coords[g[1]!]);
             const sym = ["A", "B", "C"][i];
-            return R`D_{s_{${sym}}}^C = \sqrt{r\,D_{{${labels[g[0]]}${labels[g[1]]}}}} = \sqrt{${fmtTex(cfg.radius)}\times${fmtTex(dAA)}} = ${unitM(groupGmrCap[i])}`;
+            return R`D_{s_{${sym}}}^C = \sqrt{r\,D_{{${labels[g[0]!]}${labels[g[1]!]}}}} = \sqrt{${fmtTex(cfg.radius)}\times${fmtTex(dAA)}} = ${unitM(groupGmrCap[i]!)}`;
           })
           .join(" \\\\ [4pt] "),
       });

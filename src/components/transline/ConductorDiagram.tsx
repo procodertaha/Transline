@@ -90,10 +90,10 @@ export function ConductorDiagram({
         .map((g, gi) => (
           <line
             key={gi}
-            x1={px(coords[g[0]])}
-            y1={py(coords[g[0]])}
-            x2={px(coords[g[1]])}
-            y2={py(coords[g[1]])}
+            x1={px(coords[g[0]!])}
+            y1={py(coords[g[0]!])}
+            x2={px(coords[g[1]!])}
+            y2={py(coords[g[1]!])}
             stroke={PHASE_VARS[gi % 3]}
             strokeWidth={1.5}
             strokeDasharray="6 5"

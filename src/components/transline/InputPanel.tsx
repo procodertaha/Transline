@@ -310,7 +310,7 @@ export function InputPanel({
                   <input
                     type="number"
                     step="0.1"
-                    value={coords[i].x}
+                    value={coords[i]!.x}
                     onChange={(e) => setCoord(i, "x", parseFloat(e.target.value))}
                     className="w-full rounded-md border border-input bg-background px-1.5 py-1 text-xs font-mono"
                     aria-label={`x of ${lab}`}
@@ -319,7 +319,7 @@ export function InputPanel({
                   <input
                     type="number"
                     step="0.1"
-                    value={coords[i].y}
+                    value={coords[i]!.y}
                     onChange={(e) => setCoord(i, "y", parseFloat(e.target.value))}
                     className="w-full rounded-md border border-input bg-background px-1.5 py-1 text-xs font-mono"
                     aria-label={`y of ${lab}`}
