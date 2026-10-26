@@ -318,8 +318,18 @@ function Index() {
                 </div>
               </div>
               <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold">Inputs</h3>
-                <InputPanel cfg={cfg} update={update} />
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                  Inputs
+                  <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                    {CONDUCTOR_OPTIONS.find((o) => o.type === cfg.conductorType)?.title}
+                  </span>
+                </h3>
+                <InputPanel
+                  cfg={cfg}
+                  update={update}
+                  res={res}
+                  conductorTitle={CONDUCTOR_OPTIONS.find((o) => o.type === cfg.conductorType)?.title ?? ""}
+                />
               </div>
             </div>
 
