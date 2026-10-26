@@ -63,7 +63,7 @@ export function formulaCards(cfg: LineConfig, tab: "ind" | "cap"): FormulaCard[]
     if (cfg.conductorType === "acsr") {
       cards.push({
         title: "ACSR conductors",
-        note: "For commercial ACSR the internal flux linkage depends on the steel/aluminium lay-up — take Ds directly from the manufacturer table instead of 0.7788·r.",
+        note: "For commercial ACSR the internal flux linkage depends on the steel/aluminium lay-up — take Ds directly from the manufacturer table. No table value? Tick the option to use r' = 0.7788·r instead.",
         tex: R`D_s = \text{GMR from data table (ft or m)}`,
       });
     }

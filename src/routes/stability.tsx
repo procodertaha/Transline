@@ -388,7 +388,7 @@ function Stability() {
     loadedRef.current = true;
     try {
       const v = parseFloat(localStorage.getItem("transline:xl-total") ?? "");
-      if (isFinite(v) && v > 0) setP((s) => ({ ...s, xLine: v, xDouble: v / 2 }));
+      if (isFinite(v) && v > 0) setP((s) => ({ ...s, xLine: Math.round(v * 100) / 100, xDouble: Math.round(v / 2 * 100) / 100 }));
     } catch {
       /* ignore */
     }
@@ -404,7 +404,7 @@ function Stability() {
       <header className="grid-bg -mx-4 mb-8 border-b border-border bg-secondary/30 px-4 py-8">
         <div className="max-w-2xl">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Stability module (Ch. 16)
+            Stability module
           </h1>
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
             Power–angle curve, swing equation and equal-area criterion. The line
@@ -430,7 +430,7 @@ function Stability() {
                 onClick={() => {
                   try {
                     const v = parseFloat(localStorage.getItem("transline:xl-total") ?? "");
-                    if (isFinite(v) && v > 0) set({ xLine: v, xDouble: v / 2 });
+                    if (isFinite(v) && v > 0) set({ xLine: Math.round(v * 100) / 100, xDouble: Math.round(v / 2 * 100) / 100 });
                   } catch {
                     /* ignore */
                   }

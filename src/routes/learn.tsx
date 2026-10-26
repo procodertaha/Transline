@@ -51,8 +51,8 @@ function Learn() {
           Learn: how line parameters arise
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          The theory behind every formula the calculator uses — Grainger &amp;
-          Stevenson, <em>Power System Analysis</em>, Ch. 4, 5 and 16.
+          The theory behind every formula the calculator uses — from flux
+          linkage to the equal-area criterion.
         </p>
       </header>
 
@@ -217,7 +217,7 @@ function Learn() {
         </p>
       </Section>
 
-      <Section title="8. Where this all leads: stability (Ch. 16)">
+      <Section title="8. Where this all leads: stability">
         <p>
           The reactance computed here feeds the power–angle equation and the
           swing equation:
