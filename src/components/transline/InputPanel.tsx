@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { buildCoords, labelsFor } from "@/lib/transline/config";
 import { STRAND_FACTOR } from "@/lib/transline/constants";
+import type { CalcResult } from "@/lib/transline/calc";
+import { fmtUi } from "@/lib/transline/format";
 import { RADIUS_UNITS, type LineConfig, type StrandCount, type SubConductorCount, type Vec2 } from "@/lib/transline/types";
 import { cn } from "@/lib/utils";
 
@@ -77,9 +79,13 @@ function Segmented<T extends string | number>({
 export function InputPanel({
   cfg,
   update,
+  res,
+  conductorTitle,
 }: {
   cfg: LineConfig;
   update: (patch: Partial<LineConfig>) => void;
+  res: CalcResult;
+  conductorTitle: string;
 }) {
   const [rUnit, setRUnit] = useState("cm");
   const [dsUnit, setDsUnit] = useState("m");
@@ -112,6 +118,20 @@ export function InputPanel({
         <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Conductor
         </h4>
+        <div className="mb-3 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-primary">{conductorTitle}</span>
+            <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+              GMR picked automatically
+            </span>
+          </div>
+          <p className="mt-1 text-muted-foreground">{res.gmrNote}</p>
+          <div className="mt-2 font-mono tabular-nums text-foreground">
+            Ds (inductance) = {fmtUi(res.gmrInd)} m
+            <span className="mx-2 text-muted-foreground">·</span>
+            Ds^C (capacitance) = {fmtUi(res.gmrCap)} m
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelCls}>Outer radius r</label>
