@@ -123,7 +123,7 @@ function conductorGmrCap(cfg: LineConfig): number {
 /** GMR of a phase group: 1 member → self; 2 members → sqrt(self × mutual). */
 function groupGmr(members: number[], memberGmr: number, coords: Vec2[]): number {
   if (members.length === 1) return memberGmr;
-  return Math.sqrt(memberGmr * dist(coords[members[0]!], coords[members[1]!]));
+  return Math.sqrt(memberGmr * dist(coords[members[0]!]!, coords[members[1]!]!));
 }
 
 /** GMD between two groups: (product of all cross distances)^(1/(n·m)). */
@@ -314,11 +314,11 @@ export function computeLine(cfg: LineConfig): CalcResult {
   if (cfg.system === "three") {
     cn = 2 * Math.PI * EPS0 / Math.log(deq / dsEqCap);
     if (cfg.earthEffect) {
-      const rep = groups.map((g) => coords[g[0]!]);
+      const rep = groups.map((g) => coords[g[0]!]!);
       const H = rep.map((p) => p.y);
-      const d12 = dist(rep[0], rep[1]);
-      const d23 = dist(rep[1], rep[2]);
-      const d31 = dist(rep[2], rep[0]);
+      const d12 = dist(rep[0]!, rep[1]!);
+      const d23 = dist(rep[1]!, rep[2]!);
+      const d31 = dist(rep[2]!, rep[0]!);
       const H12 = Math.sqrt(d12 * d12 + 4 * H[0]! * H[1]!);
       const H23 = Math.sqrt(d23 * d23 + 4 * H[1]! * H[2]!);
       const H31 = Math.sqrt(d31 * d31 + 4 * H[2]! * H[0]!);
@@ -362,8 +362,8 @@ export function computeLine(cfg: LineConfig): CalcResult {
       tex: R`C_{ab} = \frac{\pi\varepsilon_0}{\ln(D/r)} = \frac{\pi(8.854\times10^{-12})}{\ln(${fmtTex(deq / gmrCap)})} = ${fmtTex(cAb!)}\ \tfrac{\text{F}}{\text{m}} \\[6pt] C_n = 2C_{ab} = \frac{2\pi\varepsilon_0}{\ln(D/r)} = ${fmtTex(cn)}\ \tfrac{\text{F}}{\text{m}} = ${fmtTex(cn * 1e12)}\ \tfrac{\text{nF}}{\text{km}}`,
     });
   } else if (cfg.system === "single") {
-    const dxCap = dist(coords[groups[0]![0]!], coords[groups[0]![1]!]);
-    const dyCap = dist(coords[groups[1]![0]!], coords[groups[1]![1]!]);
+    const dxCap = dist(coords[groups[0]![0]!]!, coords[groups[0]![1]!]!);
+    const dyCap = dist(coords[groups[1]![0]!]!, coords[groups[1]![1]!]!);
     steps.push({
       section: "cap",
       title: "GMR for capacitance per side",
