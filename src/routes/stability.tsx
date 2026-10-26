@@ -388,7 +388,7 @@ function Stability() {
     loadedRef.current = true;
     try {
       const v = parseFloat(localStorage.getItem("transline:xl-total") ?? "");
-      if (isFinite(v) && v > 0) setP((s) => ({ ...s, xLine: v, xDouble: v / 2 }));
+      if (isFinite(v) && v > 0) setP((s) => ({ ...s, xLine: Math.round(v * 100) / 100, xDouble: Math.round(v / 2 * 100) / 100 }));
     } catch {
       /* ignore */
     }
@@ -430,7 +430,7 @@ function Stability() {
                 onClick={() => {
                   try {
                     const v = parseFloat(localStorage.getItem("transline:xl-total") ?? "");
-                    if (isFinite(v) && v > 0) set({ xLine: v, xDouble: v / 2 });
+                    if (isFinite(v) && v > 0) set({ xLine: Math.round(v * 100) / 100, xDouble: Math.round(v / 2 * 100) / 100 });
                   } catch {
                     /* ignore */
                   }
