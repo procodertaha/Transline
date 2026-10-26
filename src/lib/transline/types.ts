@@ -31,6 +31,8 @@ export interface LineConfig {
   conductorType: ConductorType;
   strands: StrandCount;
   acsrDs: number; // metres
+  /** When true, use r' = 0.7788·r instead of the manufacturer table GMR. */
+  acsrUseSolid: boolean;
   subconductors: SubConductorCount;
   bundleSpacing: number; // metres
   radius: number; // metres (outer radius of whole conductor)

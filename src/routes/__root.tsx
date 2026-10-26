@@ -87,9 +87,9 @@ function Footer() {
           TransLine Calculator — Transmission Line Parameters
         </p>
         <p className="mt-1">
-          Based on Grainger &amp; Stevenson, <em>Power System Analysis</em>,
-          McGraw-Hill — Ch. 4 &amp; 5 (line inductance and capacitance), Ch. 16
-          (power system stability). All calculations run in your browser.
+          An educational calculator for transmission line inductance,
+          capacitance and power system stability. All calculations run in your
+          browser — always verify critical engineering results independently.
         </p>
       </div>
     </footer>

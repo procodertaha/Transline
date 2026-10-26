@@ -132,6 +132,11 @@
   ::selection {
     background-color: color-mix(in oklab, var(--color-primary) 25%, transparent);
   }
+
+  button,
+  [role="button"] {
+    cursor: default;
+  }
 }
 
 /* KaTeX blocks */

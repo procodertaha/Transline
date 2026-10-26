@@ -115,7 +115,7 @@ function summaryText(cfg: LineConfig, res: CalcResult, tab: "ind" | "cap"): stri
   lines.push("");
   lines.push("Ds (inductance) uses r' = 0.7788·r — internal flux linkage.");
   lines.push("Ds^C (capacitance) uses r — only the external field matters.");
-  lines.push("Grainger & Stevenson, Power System Analysis, McGraw-Hill");
+  lines.push("TransLine Calculator — educational tool; verify critical engineering results independently.");
   return lines.join("\n");
 }
 

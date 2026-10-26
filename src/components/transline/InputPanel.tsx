@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { buildCoords, labelsFor } from "@/lib/transline/config";
+import { STRAND_FACTOR } from "@/lib/transline/constants";
 import { RADIUS_UNITS, type LineConfig, type StrandCount, type SubConductorCount, type Vec2 } from "@/lib/transline/types";
 import { cn } from "@/lib/utils";
 
@@ -149,7 +150,7 @@ export function InputPanel({
               >
                 {[7, 19, 37, 61, 91].map((s) => (
                   <option key={s} value={s}>
-                    {s}-strand (Ds = {(0.726 + [7, 19, 37, 61, 91].indexOf(s) * 0.012).toFixed(3)}·r)
+                    {s}-strand (Ds = {STRAND_FACTOR[s]}·r)
                   </option>
                 ))}
               </select>
@@ -181,6 +182,15 @@ export function InputPanel({
                 </select>
               </div>
             </div>
+            <label className="col-span-2 flex cursor-default items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={cfg.acsrUseSolid}
+                onChange={(e) => update({ acsrUseSolid: e.target.checked })}
+                className="size-4 accent-[var(--color-primary)]"
+              />
+              Use r' = e<sup>−1/4</sup>·r = 0.7788·r instead of the table GMR
+            </label>
           )}
           {cfg.conductorType === "bundled" && (
             <>
@@ -211,14 +221,6 @@ export function InputPanel({
               />
             </>
           )}
-          <NumField
-            label="Frequency f"
-            value={cfg.freq}
-            onChange={(v) =>
-              update({ freq: v === 60 ? 60 : 50 })
-            }
-            suffix="Hz"
-          />
           <div>
             <label className={labelCls}>Frequency</label>
             <Segmented

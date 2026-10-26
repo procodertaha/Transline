@@ -404,7 +404,7 @@ function Stability() {
       <header className="grid-bg -mx-4 mb-8 border-b border-border bg-secondary/30 px-4 py-8">
         <div className="max-w-2xl">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Stability module (Ch. 16)
+            Stability module
           </h1>
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
             Power–angle curve, swing equation and equal-area criterion. The line

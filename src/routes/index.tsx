@@ -159,7 +159,7 @@ function Index() {
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
             Compute inductance and capacitance per phase for any configuration —
             with the correct formulas, a step-by-step worked solution and a live
-            diagram. Based on Grainger &amp; Stevenson, Ch. 4 &amp; 5.
+            diagram, all in your browser.
           </p>
         </div>
       </section>
