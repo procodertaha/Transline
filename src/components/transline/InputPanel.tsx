@@ -157,6 +157,7 @@ export function InputPanel({
             </div>
           )}
           {cfg.conductorType === "acsr" && (
+            <>
             <div>
               <label className={labelCls}>GMR Ds (manufacturer)</label>
               <div className="flex gap-2">
@@ -191,6 +192,7 @@ export function InputPanel({
               />
               Use r' = e<sup>−1/4</sup>·r = 0.7788·r instead of the table GMR
             </label>
+            </>
           )}
           {cfg.conductorType === "bundled" && (
             <>

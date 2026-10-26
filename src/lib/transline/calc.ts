@@ -206,7 +206,9 @@ export function computeLine(cfg: LineConfig): CalcResult {
       note: gmrIndRes.note,
       tex:
         cfg.conductorType === "acsr"
-          ? R`D_s = ${fmtTex(cfg.acsrDs)}\ \text{m}\quad (\text{from manufacturer table})`
+          ? cfg.acsrUseSolid
+            ? R`D_s = r' = 0.7788\times${fmtTex(rCm)}\ \text{cm} = ${unitM(gmrInd)}\quad (\text{using } r' = e^{-1/4}r)`
+            : R`D_s = ${fmtTex(cfg.acsrDs)}\ \text{m}\quad (\text{from manufacturer table})`
           : R`D_s = ${fmtTex(cfg.conductorType === "solid" ? 0.7788 : STRAND_FACTOR[cfg.strands]!)}\times r = ${fmtTex(cfg.conductorType === "solid" ? 0.7788 : STRAND_FACTOR[cfg.strands]!)}\times${fmtTex(rCm)}\ \text{cm} = ${unitM(gmrInd)}`,
     });
   }
@@ -217,7 +219,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
       .map((g, i) => {
         const lab = labels[g[0]!];
         const lab2 = labels[g[1]!];
-        const dAA = dist(coords[g[0]!], coords[g[1]!]);
+        const dAA = dist(coords[g[0]!]!, coords[g[1]!]!);
         const sym = ["A", "B", "C"][i] ?? String(i);
         return R`D_{s_{${sym}}} = \sqrt{D_s\,D_{${lab}${lab2}}} = \sqrt{${fmtTex(gmrInd)}\times${fmtTex(dAA)}} = ${unitM(groupGmrInd[i]!)}`;
       })
@@ -394,7 +396,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
         title: "Group GMR for capacitance",
         tex: groups
           .map((g, i) => {
-            const dAA = dist(coords[g[0]!], coords[g[1]!]);
+            const dAA = dist(coords[g[0]!]!, coords[g[1]!]!);
             const sym = ["A", "B", "C"][i];
             return R`D_{s_{${sym}}}^C = \sqrt{r\,D_{{${labels[g[0]!]}${labels[g[1]!]}}}} = \sqrt{${fmtTex(cfg.radius)}\times${fmtTex(dAA)}} = ${unitM(groupGmrCap[i]!)}`;
           })
