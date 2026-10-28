@@ -372,7 +372,7 @@ export function InputPanel({
         )}
         {!isCustom && cfg.circuit === "single" && (
           <div className="grid grid-cols-2 gap-3">
-            <NumField
+            <UnitField
               label={
                 cfg.system === "three" && cfg.layout === "equilateral"
                   ? "Equilateral spacing D"
@@ -380,15 +380,15 @@ export function InputPanel({
               }
               value={cfg.spacingD}
               onChange={(v) => update({ spacingD: v })}
-              step="0.1"
-              suffix="m"
+              unit={dUnit}
+              onUnitChange={setDUnit}
             />
-            <NumField
+            <UnitField
               label="Height above ground"
               value={cfg.heightM}
               onChange={(v) => update({ heightM: v })}
-              step="0.1"
-              suffix="m"
+              unit={hUnit}
+              onUnitChange={setHUnit}
             />
           </div>
         )}
