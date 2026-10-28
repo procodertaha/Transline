@@ -11,36 +11,67 @@ const inputCls =
   "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono tabular-nums outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/30";
 const labelCls = "mb-1 block text-xs font-medium text-muted-foreground";
 
-function NumField({
+function UnitSelect({
+  value,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="rounded-lg border border-input bg-background px-2 text-sm"
+      aria-label={ariaLabel}
+    >
+      {RADIUS_UNITS.map((u) => (
+        <option key={u.label}>{u.label}</option>
+      ))}
+    </select>
+  );
+}
+
+/** Numeric field with a unit selector; stores metres, converts at the input edge. */
+function UnitField({
   label,
   value,
   onChange,
-  step = "any",
-  suffix,
+  unit,
+  onUnitChange,
+  step = "0.1",
 }: {
   label: string;
   value: number;
   onChange: (v: number) => void;
+  unit: string;
+  onUnitChange: (v: string) => void;
   step?: string;
-  suffix?: string;
 }) {
+  const factor = RADIUS_UNITS.find((u) => u.label === unit)!.factor;
   return (
     <div>
       <label className={labelCls}>{label}</label>
-      <div className="relative">
+      <div className="flex gap-2">
         <input
           type="number"
           step={step}
           min={0}
-          value={Number.isFinite(value) ? value : ""}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className={cn(inputCls, suffix && "pr-12")}
+          value={
+            Number.isFinite(value)
+              ? parseFloat((value / factor).toPrecision(6))
+              : ""
+          }
+          onChange={(e) => onChange(parseFloat(e.target.value) * factor)}
+          className={inputCls}
         />
-        {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-            {suffix}
-          </span>
-        )}
+        <UnitSelect
+          value={unit}
+          onChange={onUnitChange}
+          ariaLabel={`${label} unit`}
+        />
       </div>
     </div>
   );
