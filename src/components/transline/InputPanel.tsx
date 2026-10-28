@@ -11,6 +11,41 @@ const inputCls =
   "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono tabular-nums outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/30";
 const labelCls = "mb-1 block text-xs font-medium text-muted-foreground";
 
+function NumField({
+  label,
+  value,
+  onChange,
+  step = "any",
+  suffix,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  step?: string;
+  suffix?: string;
+}) {
+  return (
+    <div>
+      <label className={labelCls}>{label}</label>
+      <div className="relative">
+        <input
+          type="number"
+          step={step}
+          min={0}
+          value={Number.isFinite(value) ? value : ""}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className={cn(inputCls, suffix && "pr-12")}
+        />
+        {suffix && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+            {suffix}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function UnitSelect({
   value,
   onChange,
@@ -122,6 +157,9 @@ export function InputPanel({
   const [dsUnit, setDsUnit] = useState("m");
   const rFactor = RADIUS_UNITS.find((u) => u.label === rUnit)!.factor;
   const dsFactor = RADIUS_UNITS.find((u) => u.label === dsUnit)!.factor;
+  const [dUnit, setDUnit] = useState("m");
+  const [hUnit, setHUnit] = useState("m");
+  const [coordUnit, setCoordUnit] = useState("m");
   const labels = labelsFor(cfg.system, cfg.circuit);
   const coords = buildCoords(cfg);
   const isCustom =
