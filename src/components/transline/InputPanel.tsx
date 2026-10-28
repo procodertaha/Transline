@@ -46,6 +46,72 @@ function NumField({
   );
 }
 
+function UnitSelect({
+  value,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="rounded-lg border border-input bg-background px-2 text-sm"
+      aria-label={ariaLabel}
+    >
+      {RADIUS_UNITS.map((u) => (
+        <option key={u.label}>{u.label}</option>
+      ))}
+    </select>
+  );
+}
+
+/** Numeric field with a unit selector; stores metres, converts at the input edge. */
+function UnitField({
+  label,
+  value,
+  onChange,
+  unit,
+  onUnitChange,
+  step = "0.1",
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  unit: string;
+  onUnitChange: (v: string) => void;
+  step?: string;
+}) {
+  const factor = RADIUS_UNITS.find((u) => u.label === unit)!.factor;
+  return (
+    <div>
+      <label className={labelCls}>{label}</label>
+      <div className="flex gap-2">
+        <input
+          type="number"
+          step={step}
+          min={0}
+          value={
+            Number.isFinite(value)
+              ? parseFloat((value / factor).toPrecision(6))
+              : ""
+          }
+          onChange={(e) => onChange(parseFloat(e.target.value) * factor)}
+          className={inputCls}
+        />
+        <UnitSelect
+          value={unit}
+          onChange={onUnitChange}
+          ariaLabel={`${label} unit`}
+        />
+      </div>
+    </div>
+  );
+}
+
 function Segmented<T extends string | number>({
   options,
   value,
@@ -91,7 +157,11 @@ export function InputPanel({
   const [dsUnit, setDsUnit] = useState("m");
   const rFactor = RADIUS_UNITS.find((u) => u.label === rUnit)!.factor;
   const dsFactor = RADIUS_UNITS.find((u) => u.label === dsUnit)!.factor;
+  const [dUnit, setDUnit] = useState("m");
+  const [hUnit, setHUnit] = useState("m");
+  const [coordUnit, setCoordUnit] = useState("m");
   const labels = labelsFor(cfg.system, cfg.circuit);
+  const coordFactor = RADIUS_UNITS.find((u) => u.label === coordUnit)!.factor;
   const coords = buildCoords(cfg);
   const isCustom =
     cfg.system === "three" && cfg.circuit === "single"
@@ -303,7 +373,7 @@ export function InputPanel({
         )}
         {!isCustom && cfg.circuit === "single" && (
           <div className="grid grid-cols-2 gap-3">
-            <NumField
+            <UnitField
               label={
                 cfg.system === "three" && cfg.layout === "equilateral"
                   ? "Equilateral spacing D"
@@ -311,47 +381,71 @@ export function InputPanel({
               }
               value={cfg.spacingD}
               onChange={(v) => update({ spacingD: v })}
-              step="0.1"
-              suffix="m"
+              unit={dUnit}
+              onUnitChange={setDUnit}
             />
-            <NumField
+            <UnitField
               label="Height above ground"
               value={cfg.heightM}
               onChange={(v) => update({ heightM: v })}
-              step="0.1"
-              suffix="m"
+              unit={hUnit}
+              onUnitChange={setHUnit}
             />
           </div>
         )}
         {(isCustom || cfg.circuit === "double") && (
-          <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-secondary/40 p-3 sm:grid-cols-3">
-            {labels.map((lab, i) => (
-              <div key={lab} className="rounded-lg bg-card p-2 shadow-sm">
-                <div className="mb-1 font-mono text-xs font-semibold text-primary">
-                  {lab}
+          <div>
+            <div className="mb-2 flex items-center justify-end gap-2">
+              <span className="text-xs text-muted-foreground">
+                Enter x, y in
+              </span>
+              <UnitSelect
+                value={coordUnit}
+                onChange={setCoordUnit}
+                ariaLabel="Coordinate unit"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-secondary/40 p-3 sm:grid-cols-3">
+              {labels.map((lab, i) => (
+                <div key={lab} className="rounded-lg bg-card p-2 shadow-sm">
+                  <div className="mb-1 font-mono text-xs font-semibold text-primary">
+                    {lab}
+                  </div>
+                  <div className="flex gap-1">
+                    <input
+                      type="number"
+                      step="any"
+                      value={
+                        Number.isFinite(coords[i]!.x)
+                          ? parseFloat((coords[i]!.x / coordFactor).toPrecision(6))
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setCoord(i, "x", parseFloat(e.target.value) * coordFactor)
+                      }
+                      className="w-full rounded-md border border-input bg-background px-1.5 py-1 text-xs font-mono"
+                      aria-label={`x of ${lab}`}
+                      placeholder="x"
+                    />
+                    <input
+                      type="number"
+                      step="any"
+                      value={
+                        Number.isFinite(coords[i]!.y)
+                          ? parseFloat((coords[i]!.y / coordFactor).toPrecision(6))
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setCoord(i, "y", parseFloat(e.target.value) * coordFactor)
+                      }
+                      className="w-full rounded-md border border-input bg-background px-1.5 py-1 text-xs font-mono"
+                      aria-label={`y of ${lab}`}
+                      placeholder="y"
+                    />
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={coords[i]!.x}
-                    onChange={(e) => setCoord(i, "x", parseFloat(e.target.value))}
-                    className="w-full rounded-md border border-input bg-background px-1.5 py-1 text-xs font-mono"
-                    aria-label={`x of ${lab}`}
-                    placeholder="x"
-                  />
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={coords[i]!.y}
-                    onChange={(e) => setCoord(i, "y", parseFloat(e.target.value))}
-                    className="w-full rounded-md border border-input bg-background px-1.5 py-1 text-xs font-mono"
-                    aria-label={`y of ${lab}`}
-                    placeholder="y"
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
         {cfg.system === "three" && (
