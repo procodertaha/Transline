@@ -94,3 +94,28 @@ describe("three-phase double circuit (vertical preset)", () => {
     expect(coords.every((c) => c.y > 0)).toBe(true);
   });
 });
+
+describe("bundled conductor GMR source", () => {
+  const base = {
+    ...defaultConfig(),
+    conductorType: "bundled" as const,
+    radius: 0.02,
+    bundleSpacing: 0.4572,
+    subconductors: 2 as const,
+  };
+
+  it("uses r' = 0.7788 r per sub-conductor when the checkbox is on", () => {
+    const res = computeLine({ ...base, bundleUseSolid: true });
+    expect(res.gmrInd).toBeCloseTo(Math.sqrt(SOLID_FACTOR * base.radius * base.bundleSpacing), 12);
+  });
+
+  it("uses the entered table GMR when the checkbox is off", () => {
+    const res = computeLine({ ...base, bundleDs: 0.0159, bundleUseSolid: false });
+    expect(res.gmrInd).toBeCloseTo(Math.sqrt(0.0159 * base.bundleSpacing), 12);
+  });
+
+  it("requires a table GMR when the checkbox is off", () => {
+    const res = computeLine({ ...base, bundleDs: 0, bundleUseSolid: false });
+    expect(res.errors).toContainEqual(expect.stringContaining("GMR"));
+  });
+});

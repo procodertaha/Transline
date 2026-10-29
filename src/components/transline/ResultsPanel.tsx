@@ -130,16 +130,6 @@ export function ResultsPanel({
 }) {
   const [copied, setCopied] = useState(false);
 
-  // Hand the total line reactance to the stability module.
-  useEffect(() => {
-    if (tab === "ind") {
-      try {
-        localStorage.setItem("transline:xl-total", String(res.xlTotal));
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [res.xlTotal, tab]);
 
   if (res.errors.length > 0) {
     return (

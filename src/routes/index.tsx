@@ -105,7 +105,7 @@ const CONDUCTOR_OPTIONS: { type: ConductorType; title: string; desc: string }[] 
   { type: "stranded", title: "Stranded", desc: "7 / 19 / 37 / 61 / 91 strands — table factors" },
   { type: "acsr", title: "ACSR / composite", desc: "Enter GMR (Ds) from the manufacturer table" },
   { type: "hollow", title: "Hollow / tubular", desc: "Thin-walled tube — Ds ≈ r" },
-  { type: "bundled", title: "Bundled", desc: "2, 3 or 4 sub-conductors per phase" },
+  { type: "bundled", title: "Bundled", desc: "2, 3 or 4 sub-conductors — table Ds or r' = 0.7788 r" },
 ];
 
 function Index() {
@@ -291,12 +291,6 @@ function Index() {
             >
               Load built-in self-check example
             </button>
-            <Link
-              to="/stability"
-              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium transition hover:bg-accent"
-            >
-              Use these results in the stability module →
-            </Link>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[minmax(340px,420px)_1fr]">

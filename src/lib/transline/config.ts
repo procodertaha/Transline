@@ -42,6 +42,8 @@ export function defaultConfig(): LineConfig {
     strands: 7,
     acsrDs: 0.01,
     acsrUseSolid: false,
+    bundleDs: 0.01,
+    bundleUseSolid: false,
     subconductors: 2,
     bundleSpacing: 0.4572,
     radius: 0.01,

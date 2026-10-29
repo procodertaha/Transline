@@ -47,7 +47,6 @@ function Header() {
   const links = [
     { to: "/", label: "Calculator" },
     { to: "/learn", label: "Learn" },
-    { to: "/stability", label: "Stability" },
   ] as const;
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
@@ -87,9 +86,9 @@ function Footer() {
           TransLine Calculator — Transmission Line Parameters
         </p>
         <p className="mt-1">
-          An educational calculator for transmission line inductance,
-          capacitance and power system stability. All calculations run in your
-          browser — always verify critical engineering results independently.
+          An educational calculator for transmission line inductance and
+          capacitance. All calculations run in your browser — always verify
+          critical engineering results independently.
         </p>
       </div>
     </footer>

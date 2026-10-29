@@ -304,6 +304,31 @@ export function InputPanel({
                   ))}
                 </select>
               </div>
+              <div>
+                <label className={labelCls}>GMR Ds (per sub-conductor)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    step="any"
+                    min={0}
+                    value={cfg.bundleDs / dsFactor}
+                    onChange={(e) =>
+                      update({ bundleDs: parseFloat(e.target.value) * dsFactor })
+                    }
+                    className={inputCls}
+                  />
+                  <select
+                    value={dsUnit}
+                    onChange={(e) => setDsUnit(e.target.value)}
+                    className="rounded-lg border border-input bg-background px-2 text-sm"
+                    aria-label="Bundle GMR unit"
+                  >
+                    {RADIUS_UNITS.map((u) => (
+                      <option key={u.label}>{u.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <NumField
                 label="Bundle spacing d"
                 value={cfg.bundleSpacing}
@@ -311,6 +336,15 @@ export function InputPanel({
                 step="0.01"
                 suffix="m"
               />
+              <label className="col-span-2 flex cursor-default items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={cfg.bundleUseSolid}
+                  onChange={(e) => update({ bundleUseSolid: e.target.checked })}
+                  className="size-4 accent-[var(--color-primary)]"
+                />
+                Use r' = e<sup>−1/4</sup>·r = 0.7788·r instead of the table GMR
+              </label>
             </>
           )}
           <div>

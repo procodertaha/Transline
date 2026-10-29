@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { TeX } from "@/components/transline/TeX";
 
 export const Route = createFileRoute("/learn")({
@@ -209,11 +209,7 @@ function Learn() {
         <p>
           Lower reactance is not just an operating convenience: it directly
           raises the steady-state stability limit P_max = |E||V|/X. Try both
-          circuit types in the calculator, then take the reactance to the{" "}
-          <Link to="/stability" className="font-medium text-primary underline underline-offset-2">
-            stability module
-          </Link>{" "}
-          to see the power–angle curve climb.
+          circuit types in the calculator to compare their reactance.
         </p>
       </Section>
 
@@ -235,11 +231,8 @@ function Learn() {
           math={`\\delta_{cr} = \\arccos\\left[\\frac{P_m}{P_{\\max}}(\\delta_{\\max} - \\delta_0) + \\cos\\delta_{\\max}\\right]`}
         />
         <p>
-          Explore it interactively in the{" "}
-          <Link to="/stability" className="font-medium text-primary underline underline-offset-2">
-            stability module
-          </Link>
-          .
+          These stability topics go beyond the line parameters this calculator
+          computes — the reactance here is the X that feeds them.
         </p>
       </Section>
     </div>
