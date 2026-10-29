@@ -291,12 +291,6 @@ function Index() {
             >
               Load built-in self-check example
             </button>
-            <Link
-              to="/stability"
-              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium transition hover:bg-accent"
-            >
-              Use these results in the stability module →
-            </Link>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[minmax(340px,420px)_1fr]">
