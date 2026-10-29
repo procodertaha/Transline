@@ -58,6 +58,8 @@ export function validate(cfg: LineConfig, coords: Vec2[]): string[] {
   if (!(cfg.radius > 0)) errors.push("Conductor radius must be positive.");
   if (cfg.conductorType === "acsr" && !cfg.acsrUseSolid && !(cfg.acsrDs > 0))
     errors.push("Enter the manufacturer GMR (Ds) for the ACSR conductor.");
+  if (cfg.conductorType === "bundled" && !cfg.bundleUseSolid && !(cfg.bundleDs > 0))
+    errors.push("Enter the per-sub-conductor GMR (Ds) for the bundle.");
   if (cfg.conductorType === "bundled") {
     if (!(cfg.bundleSpacing > 0))
       errors.push("Bundle spacing d must be positive.");
@@ -102,12 +104,17 @@ function conductorGmrInd(cfg: LineConfig): { value: number; note: string } {
     case "hollow":
       return { value: r, note: "thin-walled tube: Ds ≈ r" };
     case "bundled": {
-      const Ds = SOLID_FACTOR * r;
+      const Ds = cfg.bundleUseSolid ? SOLID_FACTOR * r : cfg.bundleDs;
       const d = cfg.bundleSpacing;
       const n = cfg.subconductors;
       const value =
         n === 2 ? Math.sqrt(Ds * d) : n === 3 ? Math.cbrt(Ds * d * d) : 1.09 * (Ds * d ** 3) ** 0.25;
-      return { value, note: `bundle of ${n} solid sub-conductors` };
+      return {
+        value,
+        note: cfg.bundleUseSolid
+          ? `bundle of ${n} sub-conductors using r' = e^(−1/4)·r = 0.7788·r`
+          : `bundle of ${n} sub-conductors, Ds entered from the manufacturer table`,
+      };
     }
   }
 }
@@ -184,9 +191,12 @@ export function computeLine(cfg: LineConfig): CalcResult {
   // ---- Conductor GMR step (inductance) ----
   const rCm = cfg.radius * 100;
   if (bundled) {
-    const Ds0 = SOLID_FACTOR * cfg.radius;
+    const Ds0 = cfg.bundleUseSolid ? SOLID_FACTOR * cfg.radius : cfg.bundleDs;
     const d = cfg.bundleSpacing;
     const nb = cfg.subconductors;
+    const dsTex = cfg.bundleUseSolid
+      ? R`D_s = r' = e^{-1/4}\,r = 0.7788\times${fmtTex(cfg.radius)} = ${unitM(Ds0)}`
+      : R`D_s = ${fmtTex(cfg.bundleDs)}\ \text{m}\quad (\text{per sub-conductor, from the manufacturer table})`;
     const bundleTex =
       nb === 2
         ? R`D_{s_b} = \sqrt{D_s\,d} = \sqrt{${fmtTex(Ds0)}\times${fmtTex(d)}} = ${unitM(gmrInd)}`
@@ -197,7 +207,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
       section: "ind",
       title: "GMR for inductance (bundle)",
       note: gmrIndRes.note,
-      tex: R`D_s = r' = e^{-1/4}\,r = 0.7788\times${fmtTex(cfg.radius)} = ${unitM(Ds0)} \\[4pt] ${bundleTex}`,
+      tex: R`${dsTex} \\[4pt] ${bundleTex}`,
     });
   } else {
     steps.push({

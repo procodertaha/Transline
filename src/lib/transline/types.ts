@@ -33,6 +33,10 @@ export interface LineConfig {
   acsrDs: number; // metres
   /** When true, use r' = 0.7788·r instead of the manufacturer table GMR. */
   acsrUseSolid: boolean;
+  /** Per-sub-conductor GMR for bundles, in metres (manufacturer table). */
+  bundleDs: number;
+  /** When true, use r' = 0.7788·r for each sub-conductor instead of the table GMR. */
+  bundleUseSolid: boolean;
   subconductors: SubConductorCount;
   bundleSpacing: number; // metres
   radius: number; // metres (outer radius of whole conductor)
