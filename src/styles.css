@@ -163,3 +163,16 @@
     linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
   background-size: 28px 28px;
 }
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-marquee {
+  animation: marquee-scroll 22s linear infinite;
+}

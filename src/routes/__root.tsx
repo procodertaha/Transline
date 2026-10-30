@@ -78,6 +78,45 @@ function Header() {
   );
 }
 
+const GROUP_CONTRIBUTORS = [
+  "Muhammad Taha Siddiqui",
+  "Muhammad Faizan Alam",
+  "Ayesha Syed",
+  "Muhammad Ameen Anwar",
+];
+
+function GroupMarquee() {
+  return (
+    <div
+      className="overflow-hidden border-b border-border bg-secondary/40 py-1.5"
+      aria-label="Group contributions"
+    >
+      <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
+        {[0, 1].map((copy) => (
+          <div
+            key={copy}
+            aria-hidden={copy === 1}
+            className="flex shrink-0 items-center"
+          >
+            <span className="mx-4 whitespace-nowrap text-xs font-semibold text-primary">
+              Group contributions
+            </span>
+            {GROUP_CONTRIBUTORS.map((name) => (
+              <span
+                key={name}
+                className="mx-4 flex items-center gap-2 whitespace-nowrap text-xs font-medium text-muted-foreground"
+              >
+                <span className="size-1 rounded-full bg-primary/60" />
+                {name}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Footer() {
   return (
     <footer className="border-t border-border bg-secondary/40">
@@ -219,6 +258,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
         <Header />
+        <GroupMarquee />
         <main className="flex-1">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
