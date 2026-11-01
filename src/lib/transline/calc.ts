@@ -174,6 +174,16 @@ function conductorGmrCap(cfg: LineConfig): number {
   return bundleGmr(cfg.radius, cfg.subconductors, cfg.bundleSpacing, cfg.bundleArrangement);
 }
 
+/** Plain words describing the bundle arrangement, appended to step notes. */
+function arrSentence(n: number, arr: BundleArrangement): string {
+  if (n === 2) return "";
+  if (arr === "line")
+    return ` Sub-conductors sit in a straight line: adjacent spacing d, outer spacing ${n === 3 ? "2d" : "up to 3d"}.`;
+  return n === 3
+    ? " Sub-conductors sit at the corners of an equilateral triangle with spacing d."
+    : " Sub-conductors sit at the corners of a square with side d.";
+}
+
 /** GMR of a phase group: 1 member → self; 2 members → sqrt(self × mutual). */
 function groupGmr(members: number[], memberGmr: number, coords: Vec2[]): number {
   if (members.length === 1) return memberGmr;
@@ -239,21 +249,16 @@ export function computeLine(cfg: LineConfig): CalcResult {
   const rCm = cfg.radius * 100;
   if (bundled) {
     const Ds0 = cfg.bundleUseSolid ? SOLID_FACTOR * cfg.radius : cfg.bundleDs;
-    const d = cfg.bundleSpacing;
     const nb = cfg.subconductors;
+    const arr = cfg.bundleArrangement;
     const dsTex = cfg.bundleUseSolid
       ? R`D_s = r' = e^{-1/4}\,r = 0.7788\times${fmtTex(cfg.radius)} = ${unitM(Ds0)}`
       : R`D_s = ${fmtTex(cfg.bundleDs)}\ \text{m}\quad (\text{per sub-conductor, from the manufacturer table})`;
-    const bundleTex =
-      nb === 2
-        ? R`D_{s_b} = \sqrt{D_s\,d} = \sqrt{${fmtTex(Ds0)}\times${fmtTex(d)}} = ${unitM(gmrInd)}`
-        : nb === 3
-          ? R`D_{s_b} = \sqrt[3]{D_s\,d^2} = \sqrt[3]{${fmtTex(Ds0)}\times(${fmtTex(d)})^2} = ${unitM(gmrInd)}`
-          : R`D_{s_b} = 1.09\,(D_s\,d^3)^{1/4} = 1.09\,(${fmtTex(Ds0)}\times(${fmtTex(d)})^3)^{1/4} = ${unitM(gmrInd)}`;
+    const bundleTex = R`D_{s_b} = ${bundleFormulaTex(nb, arr, fmtTex(Ds0))} = ${unitM(gmrInd)}`;
     steps.push({
       section: "ind",
       title: "GMR for inductance (bundle)",
-      note: gmrIndRes.note,
+      note: gmrIndRes.note + arrSentence(nb, arr),
       tex: R`${dsTex} \\[4pt] ${bundleTex}`,
     });
   } else {
