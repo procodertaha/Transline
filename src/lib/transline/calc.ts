@@ -445,11 +445,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
         ? "For capacitance use the outer radius r in the bundle formulas."
         : "For capacitance the GMR is the actual outer radius r — internal flux plays no role in the external electric field.",
       tex: bundled
-        ? cfg.subconductors === 2
-          ? R`D_{s_b}^C = \sqrt{r\,d} = \sqrt{${fmtTex(cfg.radius)}\times${fmtTex(cfg.bundleSpacing)}} = ${unitM(gmrCap)}`
-          : cfg.subconductors === 3
-            ? R`D_{s_b}^C = \sqrt[3]{r\,d^2} = ${unitM(gmrCap)}`
-            : R`D_{s_b}^C = 1.09\,(r\,d^3)^{1/4} = ${unitM(gmrCap)}`
+        ? R`D_{s_b}^C = ${bundleFormulaTex(cfg.subconductors, cfg.bundleArrangement, fmtTex(cfg.radius))} = ${unitM(gmrCap)}`
         : R`D_s^C = r = ${fmtTex(rCm)}\ \text{cm} = ${unitM(gmrCap)}`,
     });
     if (cfg.circuit === "double") {
