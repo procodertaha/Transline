@@ -9,6 +9,8 @@ export type ConductorType =
 export type StrandCount = 7 | 19 | 37 | 61 | 91;
 export type SubConductorCount = 2 | 3 | 4;
 export type DoublePreset = "vertical" | "hexagonal" | "delta" | "custom";
+/** Geometric arrangement of the sub-conductors inside a bundle. */
+export type BundleArrangement = "line" | "triangle" | "square";
 
 export interface Vec2 {
   x: number;

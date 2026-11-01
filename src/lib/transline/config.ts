@@ -45,6 +45,7 @@ export function defaultConfig(): LineConfig {
     bundleDs: 0.01,
     bundleUseSolid: false,
     subconductors: 2,
+    bundleArrangement: "line",
     bundleSpacing: 0.4572,
     radius: 0.01,
     freq: 50,
