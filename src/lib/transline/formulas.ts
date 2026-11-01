@@ -57,7 +57,11 @@ export function formulaCards(cfg: LineConfig, tab: "ind" | "cap"): FormulaCard[]
     if (cfg.conductorType === "bundled") {
       cards.push({
         title: "Bundle GMR (replace Ds by Ds_b)",
-        tex: R`n=2:\ D_{s_b} = \sqrt{D_s\,d}\qquad n=3:\ D_{s_b} = \sqrt[3]{D_s\,d^2}\qquad n=4:\ D_{s_b} = 1.09\,(D_s\,d^3)^{1/4}`,
+        note:
+          cfg.subconductors >= 3 && cfg.bundleArrangement === "line"
+            ? "Sub-conductors equally spaced in a straight line — adjacent spacing d."
+            : undefined,
+        tex: R`D_{s_b} = ${bundleFormulaTex(cfg.subconductors, cfg.bundleArrangement, "D_s")}`,
       });
     }
     if (cfg.conductorType === "acsr") {
@@ -107,7 +111,11 @@ export function formulaCards(cfg: LineConfig, tab: "ind" | "cap"): FormulaCard[]
     if (cfg.conductorType === "bundled") {
       cards.push({
         title: "Bundle GMR for capacitance (r replaces Ds)",
-        tex: R`n=2:\ \sqrt{r\,d}\qquad n=3:\ \sqrt[3]{r\,d^2}\qquad n=4:\ 1.09\,(r\,d^3)^{1/4}`,
+        note:
+          cfg.subconductors >= 3 && cfg.bundleArrangement === "line"
+            ? "Sub-conductors equally spaced in a straight line — adjacent spacing d."
+            : undefined,
+        tex: R`D_{s_b}^C = ${bundleFormulaTex(cfg.subconductors, cfg.bundleArrangement, "r")}`,
       });
     }
   }

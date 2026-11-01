@@ -1,6 +1,6 @@
 import { EPS0, MILE, SOLID_FACTOR, STRAND_FACTOR, dist } from "./constants";
 import { buildCoords, groupsFor, labelsFor } from "./config";
-import type { LineConfig, Vec2 } from "./types";
+import type { BundleArrangement, LineConfig, Vec2 } from "./types";
 import { fmtTex } from "./format";
 
 export interface Step {
@@ -87,6 +87,61 @@ export function validate(cfg: LineConfig, coords: Vec2[]): string[] {
   return errors;
 }
 
+/**
+ * GMR of one bundled phase: (Ds^n · M²)^(1/n²), where M is the product of
+ * all mutual sub-conductor spacings.
+ * - "line": n sub-conductors in a row, adjacent spacing d (mutuals d, 2d, …)
+ * - "triangle" (n = 3): equilateral triangle, all mutuals d
+ * - "square" (n = 4): square with side d (mutuals d and √2 d)
+ */
+export function bundleGmr(
+  self: number,
+  n: number,
+  d: number,
+  arrangement: BundleArrangement,
+): number {
+  if (n === 2) return Math.sqrt(self * d);
+  if (arrangement === "line") {
+    let M = 1;
+    for (let i = 0; i < n; i++)
+      for (let j = i + 1; j < n; j++) M *= (j - i) * d;
+    return (self ** n * M * M) ** (1 / (n * n));
+  }
+  if (n === 3) return Math.cbrt(self * d * d);
+  return 1.09 * (self * d ** 3) ** 0.25;
+}
+
+/** TeX for the bundle-GMR formula, with the numeric self-GMR substituted. */
+export function bundleFormulaTex(
+  n: number,
+  arrangement: BundleArrangement,
+  self: string,
+): string {
+  if (n === 2) return R`\sqrt{${self}\times d}`;
+  if (arrangement === "line") {
+    const rows = Array.from({ length: n }, (_, k) => {
+      const parts: string[] = [];
+      for (let j = 0; j < n; j++)
+        parts.push(j === k ? self : R`${fmtTex(Math.abs(j - k))}\,d`);
+      return `(${parts.join("\\cdot")})`;
+    });
+    return R`\sqrt[${n * n}]{${rows.join("\\,")}}`;
+  }
+  if (n === 3) return R`\sqrt[3]{${self}\times d^2}`;
+  return R`1.09\,(${self}\times d^3)^{1/4}`;
+}
+
+/** Plain words describing the bundle arrangement. */
+function bundleDescribe(cfg: LineConfig): string {
+  const n = cfg.subconductors;
+  if (n === 2) return "bundle of 2 sub-conductors";
+  if (cfg.bundleArrangement === "line")
+    return `bundle of ${n} sub-conductors in a straight line (adjacent spacing d, outer spacing ${n === 3 ? "2d" : "up to 3d"})`;
+  if (n === 3)
+    return "bundle of 3 sub-conductors at the corners of an equilateral triangle";
+  return "bundle of 4 sub-conductors at the corners of a square";
+}
+
 function conductorGmrInd(cfg: LineConfig): { value: number; note: string } {
   const r = cfg.radius;
   switch (cfg.conductorType) {
@@ -105,26 +160,28 @@ function conductorGmrInd(cfg: LineConfig): { value: number; note: string } {
       return { value: r, note: "thin-walled tube: Ds ≈ r" };
     case "bundled": {
       const Ds = cfg.bundleUseSolid ? SOLID_FACTOR * r : cfg.bundleDs;
-      const d = cfg.bundleSpacing;
-      const n = cfg.subconductors;
-      const value =
-        n === 2 ? Math.sqrt(Ds * d) : n === 3 ? Math.cbrt(Ds * d * d) : 1.09 * (Ds * d ** 3) ** 0.25;
+      const value = bundleGmr(Ds, cfg.subconductors, cfg.bundleSpacing, cfg.bundleArrangement);
       return {
         value,
-        note: cfg.bundleUseSolid
-          ? `bundle of ${n} sub-conductors using r' = e^(−1/4)·r = 0.7788·r`
-          : `bundle of ${n} sub-conductors, Ds entered from the manufacturer table`,
+        note: `${bundleDescribe(cfg)} using ${cfg.bundleUseSolid ? "r' = e^(−1/4)·r = 0.7788·r" : "the manufacturer-table GMR"} per sub-conductor`,
       };
     }
   }
 }
 
 function conductorGmrCap(cfg: LineConfig): number {
-  const r = cfg.radius;
-  if (cfg.conductorType !== "bundled") return r;
-  const d = cfg.bundleSpacing;
-  const n = cfg.subconductors;
-  return n === 2 ? Math.sqrt(r * d) : n === 3 ? Math.cbrt(r * d * d) : 1.09 * (r * d ** 3) ** 0.25;
+  if (cfg.conductorType !== "bundled") return cfg.radius;
+  return bundleGmr(cfg.radius, cfg.subconductors, cfg.bundleSpacing, cfg.bundleArrangement);
+}
+
+/** Plain words describing the bundle arrangement, appended to step notes. */
+function arrSentence(n: number, arr: BundleArrangement): string {
+  if (n === 2) return "";
+  if (arr === "line")
+    return ` Sub-conductors sit in a straight line: adjacent spacing d, outer spacing ${n === 3 ? "2d" : "up to 3d"}.`;
+  return n === 3
+    ? " Sub-conductors sit at the corners of an equilateral triangle with spacing d."
+    : " Sub-conductors sit at the corners of a square with side d.";
 }
 
 /** GMR of a phase group: 1 member → self; 2 members → sqrt(self × mutual). */
@@ -192,21 +249,16 @@ export function computeLine(cfg: LineConfig): CalcResult {
   const rCm = cfg.radius * 100;
   if (bundled) {
     const Ds0 = cfg.bundleUseSolid ? SOLID_FACTOR * cfg.radius : cfg.bundleDs;
-    const d = cfg.bundleSpacing;
     const nb = cfg.subconductors;
+    const arr = cfg.bundleArrangement;
     const dsTex = cfg.bundleUseSolid
       ? R`D_s = r' = e^{-1/4}\,r = 0.7788\times${fmtTex(cfg.radius)} = ${unitM(Ds0)}`
       : R`D_s = ${fmtTex(cfg.bundleDs)}\ \text{m}\quad (\text{per sub-conductor, from the manufacturer table})`;
-    const bundleTex =
-      nb === 2
-        ? R`D_{s_b} = \sqrt{D_s\,d} = \sqrt{${fmtTex(Ds0)}\times${fmtTex(d)}} = ${unitM(gmrInd)}`
-        : nb === 3
-          ? R`D_{s_b} = \sqrt[3]{D_s\,d^2} = \sqrt[3]{${fmtTex(Ds0)}\times(${fmtTex(d)})^2} = ${unitM(gmrInd)}`
-          : R`D_{s_b} = 1.09\,(D_s\,d^3)^{1/4} = 1.09\,(${fmtTex(Ds0)}\times(${fmtTex(d)})^3)^{1/4} = ${unitM(gmrInd)}`;
+    const bundleTex = R`D_{s_b} = ${bundleFormulaTex(nb, arr, fmtTex(Ds0))} = ${unitM(gmrInd)}`;
     steps.push({
       section: "ind",
       title: "GMR for inductance (bundle)",
-      note: gmrIndRes.note,
+      note: gmrIndRes.note + arrSentence(nb, arr),
       tex: R`${dsTex} \\[4pt] ${bundleTex}`,
     });
   } else {
@@ -393,11 +445,7 @@ export function computeLine(cfg: LineConfig): CalcResult {
         ? "For capacitance use the outer radius r in the bundle formulas."
         : "For capacitance the GMR is the actual outer radius r — internal flux plays no role in the external electric field.",
       tex: bundled
-        ? cfg.subconductors === 2
-          ? R`D_{s_b}^C = \sqrt{r\,d} = \sqrt{${fmtTex(cfg.radius)}\times${fmtTex(cfg.bundleSpacing)}} = ${unitM(gmrCap)}`
-          : cfg.subconductors === 3
-            ? R`D_{s_b}^C = \sqrt[3]{r\,d^2} = ${unitM(gmrCap)}`
-            : R`D_{s_b}^C = 1.09\,(r\,d^3)^{1/4} = ${unitM(gmrCap)}`
+        ? R`D_{s_b}^C = ${bundleFormulaTex(cfg.subconductors, cfg.bundleArrangement, fmtTex(cfg.radius))} = ${unitM(gmrCap)}`
         : R`D_s^C = r = ${fmtTex(rCm)}\ \text{cm} = ${unitM(gmrCap)}`,
     });
     if (cfg.circuit === "double") {
