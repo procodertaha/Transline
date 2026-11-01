@@ -1,6 +1,6 @@
 import { EPS0, MILE, SOLID_FACTOR, STRAND_FACTOR, dist } from "./constants";
 import { buildCoords, groupsFor, labelsFor } from "./config";
-import type { LineConfig, Vec2 } from "./types";
+import type { BundleArrangement, LineConfig, Vec2 } from "./types";
 import { fmtTex } from "./format";
 
 export interface Step {
@@ -160,26 +160,18 @@ function conductorGmrInd(cfg: LineConfig): { value: number; note: string } {
       return { value: r, note: "thin-walled tube: Ds ≈ r" };
     case "bundled": {
       const Ds = cfg.bundleUseSolid ? SOLID_FACTOR * r : cfg.bundleDs;
-      const d = cfg.bundleSpacing;
-      const n = cfg.subconductors;
-      const value =
-        n === 2 ? Math.sqrt(Ds * d) : n === 3 ? Math.cbrt(Ds * d * d) : 1.09 * (Ds * d ** 3) ** 0.25;
+      const value = bundleGmr(Ds, cfg.subconductors, cfg.bundleSpacing, cfg.bundleArrangement);
       return {
         value,
-        note: cfg.bundleUseSolid
-          ? `bundle of ${n} sub-conductors using r' = e^(−1/4)·r = 0.7788·r`
-          : `bundle of ${n} sub-conductors, Ds entered from the manufacturer table`,
+        note: `${bundleDescribe(cfg)} using ${cfg.bundleUseSolid ? "r' = e^(−1/4)·r = 0.7788·r" : "the manufacturer-table GMR"} per sub-conductor`,
       };
     }
   }
 }
 
 function conductorGmrCap(cfg: LineConfig): number {
-  const r = cfg.radius;
-  if (cfg.conductorType !== "bundled") return r;
-  const d = cfg.bundleSpacing;
-  const n = cfg.subconductors;
-  return n === 2 ? Math.sqrt(r * d) : n === 3 ? Math.cbrt(r * d * d) : 1.09 * (r * d ** 3) ** 0.25;
+  if (cfg.conductorType !== "bundled") return cfg.radius;
+  return bundleGmr(cfg.radius, cfg.subconductors, cfg.bundleSpacing, cfg.bundleArrangement);
 }
 
 /** GMR of a phase group: 1 member → self; 2 members → sqrt(self × mutual). */
