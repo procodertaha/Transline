@@ -40,6 +40,7 @@ export interface LineConfig {
   /** When true, use r' = 0.7788·r for each sub-conductor instead of the table GMR. */
   bundleUseSolid: boolean;
   subconductors: SubConductorCount;
+  bundleArrangement: BundleArrangement;
   bundleSpacing: number; // metres
   radius: number; // metres (outer radius of whole conductor)
   freq: 50 | 60;

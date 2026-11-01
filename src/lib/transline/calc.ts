@@ -87,6 +87,61 @@ export function validate(cfg: LineConfig, coords: Vec2[]): string[] {
   return errors;
 }
 
+/**
+ * GMR of one bundled phase: (Ds^n · M²)^(1/n²), where M is the product of
+ * all mutual sub-conductor spacings.
+ * - "line": n sub-conductors in a row, adjacent spacing d (mutuals d, 2d, …)
+ * - "triangle" (n = 3): equilateral triangle, all mutuals d
+ * - "square" (n = 4): square with side d (mutuals d and √2 d)
+ */
+export function bundleGmr(
+  self: number,
+  n: number,
+  d: number,
+  arrangement: BundleArrangement,
+): number {
+  if (n === 2) return Math.sqrt(self * d);
+  if (arrangement === "line") {
+    let M = 1;
+    for (let i = 0; i < n; i++)
+      for (let j = i + 1; j < n; j++) M *= (j - i) * d;
+    return (self ** n * M * M) ** (1 / (n * n));
+  }
+  if (n === 3) return Math.cbrt(self * d * d);
+  return 1.09 * (self * d ** 3) ** 0.25;
+}
+
+/** TeX for the bundle-GMR formula, with the numeric self-GMR substituted. */
+export function bundleFormulaTex(
+  n: number,
+  arrangement: BundleArrangement,
+  self: string,
+): string {
+  if (n === 2) return R`\sqrt{${self}\times d}`;
+  if (arrangement === "line") {
+    const rows = Array.from({ length: n }, (_, k) => {
+      const parts: string[] = [];
+      for (let j = 0; j < n; j++)
+        parts.push(j === k ? self : R`${fmtTex(Math.abs(j - k))}\,d`);
+      return `(${parts.join("\\cdot")})`;
+    });
+    return R`\sqrt[${n * n}]{${rows.join("\\,")}}`;
+  }
+  if (n === 3) return R`\sqrt[3]{${self}\times d^2}`;
+  return R`1.09\,(${self}\times d^3)^{1/4}`;
+}
+
+/** Plain words describing the bundle arrangement. */
+function bundleDescribe(cfg: LineConfig): string {
+  const n = cfg.subconductors;
+  if (n === 2) return "bundle of 2 sub-conductors";
+  if (cfg.bundleArrangement === "line")
+    return `bundle of ${n} sub-conductors in a straight line (adjacent spacing d, outer spacing ${n === 3 ? "2d" : "up to 3d"})`;
+  if (n === 3)
+    return "bundle of 3 sub-conductors at the corners of an equilateral triangle";
+  return "bundle of 4 sub-conductors at the corners of a square";
+}
+
 function conductorGmrInd(cfg: LineConfig): { value: number; note: string } {
   const r = cfg.radius;
   switch (cfg.conductorType) {
