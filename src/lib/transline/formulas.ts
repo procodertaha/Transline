@@ -1,3 +1,4 @@
+import { bundleFormulaTex } from "./calc";
 import type { LineConfig } from "./types";
 
 export interface FormulaCard {
