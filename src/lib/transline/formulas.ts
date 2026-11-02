@@ -56,12 +56,13 @@ export function formulaCards(cfg: LineConfig, tab: "ind" | "cap"): FormulaCard[]
       tex: R`X_L = 2\pi f L\ \ [\Omega/\text{m}]`,
     });
     if (cfg.conductorType === "bundled") {
+      const lineNote =
+        cfg.subconductors >= 3 && cfg.bundleArrangement === "line"
+          ? "Sub-conductors equally spaced in a straight line — adjacent spacing d."
+          : undefined;
       cards.push({
         title: "Bundle GMR (replace Ds by Ds_b)",
-        note:
-          cfg.subconductors >= 3 && cfg.bundleArrangement === "line"
-            ? "Sub-conductors equally spaced in a straight line — adjacent spacing d."
-            : undefined,
+        ...(lineNote ? { note: lineNote } : {}),
         tex: R`D_{s_b} = ${bundleFormulaTex(cfg.subconductors, cfg.bundleArrangement, "D_s")}`,
       });
     }
@@ -110,12 +111,13 @@ export function formulaCards(cfg: LineConfig, tab: "ind" | "cap"): FormulaCard[]
       tex: R`X_C = \frac{1}{2\pi f C_n},\qquad I_{\text{chg}} = 2\pi f C_n V_{LN},\qquad Q_c = 3V_{LN}^2\,(2\pi f C_n) = V_{LL}^2\,(2\pi f C_n)`,
     });
     if (cfg.conductorType === "bundled") {
+      const lineNote =
+        cfg.subconductors >= 3 && cfg.bundleArrangement === "line"
+          ? "Sub-conductors equally spaced in a straight line — adjacent spacing d."
+          : undefined;
       cards.push({
         title: "Bundle GMR for capacitance (r replaces Ds)",
-        note:
-          cfg.subconductors >= 3 && cfg.bundleArrangement === "line"
-            ? "Sub-conductors equally spaced in a straight line — adjacent spacing d."
-            : undefined,
+        ...(lineNote ? { note: lineNote } : {}),
         tex: R`D_{s_b}^C = ${bundleFormulaTex(cfg.subconductors, cfg.bundleArrangement, "r")}`,
       });
     }
