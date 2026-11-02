@@ -155,6 +155,7 @@ export function InputPanel({
 }) {
   const [rUnit, setRUnit] = useState("cm");
   const [dsUnit, setDsUnit] = useState("m");
+  const [bsUnit, setBsUnit] = useState("m");
   const rFactor = RADIUS_UNITS.find((u) => u.label === rUnit)!.factor;
   const dsFactor = RADIUS_UNITS.find((u) => u.label === dsUnit)!.factor;
   const [dUnit, setDUnit] = useState("m");
@@ -290,11 +291,15 @@ export function InputPanel({
                 <label className={labelCls}>Sub-conductors</label>
                 <select
                   value={cfg.subconductors}
-                  onChange={(e) =>
-                    update({
-                      subconductors: Number(e.target.value) as SubConductorCount,
-                    })
-                  }
+                  onChange={(e) => {
+                    const n = Number(e.target.value) as SubConductorCount;
+                    const patch: Partial<LineConfig> = { subconductors: n };
+                    if (n === 4 && cfg.bundleArrangement === "triangle")
+                      patch.bundleArrangement = "square";
+                    if (n === 3 && cfg.bundleArrangement === "square")
+                      patch.bundleArrangement = "triangle";
+                    update(patch);
+                  }}
                   className={inputCls}
                 >
                   {[2, 3, 4].map((s) => (
@@ -304,6 +309,32 @@ export function InputPanel({
                   ))}
                 </select>
               </div>
+              {cfg.subconductors >= 3 && (
+                <div className="col-span-2">
+                  <label className={labelCls}>Sub-conductor arrangement</label>
+                  <Segmented
+                    options={
+                      cfg.subconductors === 3
+                        ? [
+                            { label: "Equilateral triangle", value: "triangle" as const },
+                            { label: "In a line", value: "line" as const },
+                          ]
+                        : [
+                            { label: "Square", value: "square" as const },
+                            { label: "In a line", value: "line" as const },
+                          ]
+                    }
+                    value={
+                      cfg.bundleArrangement === "triangle" && cfg.subconductors === 4
+                        ? "square"
+                        : cfg.bundleArrangement === "square" && cfg.subconductors === 3
+                          ? "triangle"
+                          : cfg.bundleArrangement
+                    }
+                    onChange={(v) => update({ bundleArrangement: v })}
+                  />
+                </div>
+              )}
               <div>
                 <label className={labelCls}>GMR Ds (per sub-conductor)</label>
                 <div className="flex gap-2">
@@ -329,12 +360,13 @@ export function InputPanel({
                   </select>
                 </div>
               </div>
-              <NumField
-                label="Bundle spacing d"
+              <UnitField
+                label="Bundle spacing d (between adjacent)"
                 value={cfg.bundleSpacing}
                 onChange={(v) => update({ bundleSpacing: v })}
+                unit={bsUnit}
+                onUnitChange={setBsUnit}
                 step="0.01"
-                suffix="m"
               />
               <label className="col-span-2 flex cursor-default items-center gap-2 text-xs text-muted-foreground">
                 <input
