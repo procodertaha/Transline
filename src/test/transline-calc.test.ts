@@ -119,3 +119,70 @@ describe("bundled conductor GMR source", () => {
     expect(res.errors).toContainEqual(expect.stringContaining("GMR"));
   });
 });
+
+describe("bundled 3 sub-conductors in a straight line (reference problem)", () => {
+  // Phases 8 m apart horizontally; 3 sub-conductors per phase in a line,
+  // adjacent spacing d = 0.2 m; r' = 0.0289 ft = 8.81e-3 m → r = r'/0.7788.
+  const rPrime = 0.0289 * 0.3048;
+  const cfg = {
+    ...defaultConfig(),
+    conductorType: "bundled" as const,
+    subconductors: 3 as const,
+    bundleArrangement: "line" as const,
+    bundleUseSolid: true,
+    radius: rPrime / SOLID_FACTOR,
+    bundleSpacing: 0.2,
+    layout: "horizontal" as const,
+    spacingD: 8,
+  };
+  const res = computeLine(cfg);
+
+  it("bundle GMR = ⁹√((Ds·d·2d)(d·Ds·d)(2d·d·Ds)) ≈ 0.0824 m", () => {
+    expect(res.gmrInd).toBeCloseTo(0.0824, 3);
+  });
+
+  it("an equilateral-triangle bundle keeps ∛(Ds·d²) instead", () => {
+    const tri = computeLine({ ...cfg, bundleArrangement: "triangle" });
+    expect(tri.gmrInd).toBeCloseTo(
+      Math.cbrt(rPrime * 0.2 * 0.2),
+      12,
+    );
+  });
+
+  it("GMD = ∛(8·8·16) ≈ 10.08 m and L ≈ 9.61e-7 H/m", () => {
+    expect(res.deq).toBeCloseTo(10.08, 2);
+    expect(res.lPrim).toBeCloseTo(9.61e-7, 8);
+  });
+});
+
+describe("3-phase double circuit, two flat rows (reference problem)", () => {
+  // Top row a, b, c 8 m apart at 13 m; bottom row a', b', c' 3 m below.
+  const cfg = {
+    ...defaultConfig(),
+    system: "three" as const,
+    circuit: "double" as const,
+    conductorType: "solid" as const,
+    radius: 0.01,
+    doublePreset: "custom" as const,
+    // Label order is a, a', b, b', c, c': each phase pair sits 3 m apart vertically.
+    coords: [
+      { x: 0, y: 13 },
+      { x: 0, y: 10 },
+      { x: 8, y: 13 },
+      { x: 8, y: 10 },
+      { x: 16, y: 13 },
+      { x: 16, y: 10 },
+    ],
+  };
+  const res = computeLine(cfg);
+
+  it("keeps the phase groups a–a', b–b', c–c' by label, not by position", () => {
+    expect(res.groups).toEqual([[0, 1], [2, 3], [4, 5]]);
+  });
+
+  it("reproduces DsA ≈ 0.1528 m, Deq ≈ 10.33 m, L ≈ 8.43e-4 mH/km", () => {
+    expect(res.groupGmrInd[0]).toBeCloseTo(0.1528, 3);
+    expect(res.deq).toBeCloseTo(10.33, 2);
+    expect(res.lPrim * 1e6).toBeCloseTo(0.8427, 3);
+  });
+});

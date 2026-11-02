@@ -143,9 +143,23 @@ function Index() {
     });
   };
 
+  /** Drag support: move one conductor to (x, y) metres, switching to custom layout. */
+  const moveCoord = (i: number, x: number, y: number) => {
+    setCfg((prev) => {
+      const base = prev.coords.length ? prev.coords : buildCoords(prev);
+      const next = base.map((p, k) => (k === i ? { x, y } : { ...p }));
+      if (prev.system === "three" && prev.circuit === "single")
+        return { ...prev, layout: "custom", coords: next };
+      return { ...prev, doublePreset: "custom", coords: next };
+    });
+  };
+
   const cards = formulaCards(cfg, tab);
   const labels = labelsFor(cfg.system, cfg.circuit);
   const coords = buildCoords(cfg);
+  const editable =
+    cfg.system === "three" &&
+    (cfg.circuit === "double" || cfg.layout === "custom");
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16">
@@ -330,10 +344,18 @@ function Index() {
             <div className="space-y-5">
               <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
                 <h3 className="mb-3 text-sm font-semibold">Configuration diagram</h3>
-                <ConductorDiagram coords={coords} labels={labels} groups={res.groups} />
+                <ConductorDiagram
+                  coords={coords}
+                  labels={labels}
+                  groups={res.groups}
+                  editable={editable}
+                  onMove={moveCoord}
+                />
                 <p className="mt-2 text-xs text-muted-foreground">
                   Conductor positions in metres (y = height above ground). Dashed
                   links mark conductors of the same phase.
+                  {editable &&
+                    " Drag a dot to move that conductor — you can place a and a′ anywhere, not only opposite each other."}
                 </p>
               </div>
               <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
