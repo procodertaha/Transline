@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { Vec2 } from "@/lib/transline/types";
 
 const PHASE_VARS = [
@@ -6,19 +7,40 @@ const PHASE_VARS = [
   "var(--phase-c)",
 ];
 
+const VBW = 420;
+const VBH = 320;
+
+interface FrozenBounds {
+  minX: number;
+  minY: number;
+  scale: number;
+  ox: number;
+  oy: number;
+  rect: DOMRect;
+}
+
 export function ConductorDiagram({
   coords,
   labels,
   groups,
   showGround = true,
   className = "",
+  editable = false,
+  onMove,
 }: {
   coords: Vec2[];
   labels: string[];
   groups: number[][];
   showGround?: boolean;
   className?: string;
+  /** Allow dragging the conductor dots to reposition them. */
+  editable?: boolean;
+  /** Called with the conductor index and its new position in metres. */
+  onMove?: (i: number, x: number, y: number) => void;
 }) {
+  const dragIndex = useRef<number | null>(null);
+  const frozen = useRef<FrozenBounds | null>(null);
+
   if (coords.length === 0) return null;
   const pad = 1.2;
   const xs = coords.map((p) => p.x);
@@ -29,14 +51,23 @@ export function ConductorDiagram({
   const maxY = Math.max(...ys) + pad;
   const w = maxX - minX || 1;
   const h = maxY - minY || 1;
-  const VBW = 420;
-  const VBH = 320;
   const scale = Math.min(VBW / w, VBH / h);
   const ox = (VBW - w * scale) / 2;
   const oy = (VBH - h * scale) / 2;
   const px = (p: Vec2) => ox + (p.x - minX) * scale;
   const py = (p: Vec2) => VBH - (oy + (p.y - minY) * scale);
   const dotR = Math.max(5, Math.min(12, scale * 0.18));
+
+  /** Convert a pointer event position to metres, using bounds frozen at drag start. */
+  const pointerToData = (clientX: number, clientY: number) => {
+    const f = frozen.current!;
+    const vbX = (clientX - f.rect.left) * (VBW / f.rect.width);
+    const vbY = (clientY - f.rect.top) * (VBH / f.rect.height);
+    return {
+      x: f.minX + (vbX - f.ox) / f.scale,
+      y: f.minY + (VBH - vbY - f.oy) / f.scale,
+    };
+  };
 
   const groupOf = new Map<number, number>();
   groups.forEach((g, gi) => g.forEach((i) => groupOf.set(i, gi)));
@@ -47,6 +78,19 @@ export function ConductorDiagram({
       className={`w-full rounded-xl border border-border bg-card ${className}`}
       role="img"
       aria-label="Line configuration diagram"
+      onPointerMove={(e) => {
+        if (dragIndex.current === null || !onMove) return;
+        const { x, y } = pointerToData(e.clientX, e.clientY);
+        onMove(dragIndex.current, Math.round(x * 1000) / 1000, Math.max(0, Math.round(y * 1000) / 1000));
+      }}
+      onPointerUp={() => {
+        dragIndex.current = null;
+        frozen.current = null;
+      }}
+      onPointerLeave={() => {
+        dragIndex.current = null;
+        frozen.current = null;
+      }}
     >
       {showGround && (
         <g>
@@ -105,12 +149,44 @@ export function ConductorDiagram({
         const gi = groupOf.get(i) ?? 0;
         return (
           <g key={i}>
+            <line
+              x1={px(p)}
+              y1={py(p)}
+              x2={px(p)}
+              y2={showGround ? py({ x: 0, y: 0 }) : py(p)}
+              className="stroke-border"
+              strokeWidth={1}
+              strokeDasharray="2 4"
+              opacity={0.5}
+            />
+            {editable && (
+              <circle
+                cx={px(p)}
+                cy={py(p)}
+                r={dotR + 8}
+                fill="transparent"
+                className="cursor-grab active:cursor-grabbing"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  dragIndex.current = i;
+                  frozen.current = {
+                    minX,
+                    minY,
+                    scale,
+                    ox,
+                    oy,
+                    rect: e.currentTarget.closest("svg")!.getBoundingClientRect(),
+                  };
+                }}
+              />
+            )}
             <circle
               cx={px(p)}
               cy={py(p)}
               r={dotR}
               fill={PHASE_VARS[gi % 3]}
               opacity={0.9}
+              className={editable ? "pointer-events-none" : undefined}
             />
             <circle
               cx={px(p)}
@@ -120,11 +196,12 @@ export function ConductorDiagram({
               stroke="var(--color-foreground)"
               strokeWidth={1}
               opacity={0.35}
+              className="pointer-events-none"
             />
             <text
               x={px(p) + dotR + 6}
               y={py(p) - dotR - 2}
-              className="fill-foreground"
+              className="fill-foreground pointer-events-none"
               fontSize={13}
               fontWeight={600}
               fontFamily="var(--font-mono)"

@@ -512,6 +512,10 @@ export function InputPanel({
                 </div>
               ))}
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Tip: you can also drag the dots in the configuration diagram to set
+              each conductor's position — no typing needed.
+            </p>
           </div>
         )}
         {cfg.system === "three" && (
