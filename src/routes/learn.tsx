@@ -154,7 +154,7 @@ function Learn() {
         </p>
         <TeX
           block
-          math={`D_{s_b} = \\sqrt{D_s\\,d}\\ (n{=}2),\\quad \\sqrt[3]{D_s\\,d^2}\\ (n{=}3),\\quad 1.09\\,(D_s\\,d^3)^{1/4}\\ (n{=}4)`}
+          math={`D_{s_b} = \\sqrt{D_s\\,d}\\ (n{=}2),\\quad \\sqrt[3]{D_s\\,d^2}\\ (n{=}3,\\ \\text{equilateral}),\\quad 1.09\\,(D_s\\,d^3)^{1/4}\\ (n{=}4,\\ \\text{square})`}
         />
         <p>
           For capacitance the same formulas apply with the actual radius r in
