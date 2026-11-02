@@ -164,12 +164,13 @@ describe("3-phase double circuit, two flat rows (reference problem)", () => {
     conductorType: "solid" as const,
     radius: 0.01,
     doublePreset: "custom" as const,
+    // Label order is a, a', b, b', c, c': each phase pair sits 3 m apart vertically.
     coords: [
       { x: 0, y: 13 },
-      { x: 8, y: 13 },
-      { x: 16, y: 13 },
       { x: 0, y: 10 },
+      { x: 8, y: 13 },
       { x: 8, y: 10 },
+      { x: 16, y: 13 },
       { x: 16, y: 10 },
     ],
   };
