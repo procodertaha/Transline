@@ -157,6 +157,12 @@ function Learn() {
           math={`D_{s_b} = \\sqrt{D_s\\,d}\\ (n{=}2),\\quad \\sqrt[3]{D_s\\,d^2}\\ (n{=}3,\\ \\text{equilateral}),\\quad 1.09\\,(D_s\\,d^3)^{1/4}\\ (n{=}4,\\ \\text{square})`}
         />
         <p>
+          These assume the sub-conductors sit at the corners of an equilateral
+          triangle (n = 3) or a square (n = 4). If the sub-conductors are
+          instead mounted in a straight line with adjacent spacing d, count
+          every mutual distance — d, 2d and (for four) 3d — in the general
+          bundle formula (D_s<sup>n</sup>·M²)<sup>1/n²</sup>, where M is the
+          product of all mutual spacings. The calculator offers both options.
           For capacitance the same formulas apply with the actual radius r in
           place of Ds — a reminder that <strong>bundling is one of the few
           practical ways to cut reactance on EHV lines</strong>.
