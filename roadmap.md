@@ -8,3 +8,6 @@
 - [x] User request: buttons show the arrow cursor, not the hand cursor
 - [x] User request: remove book references from all pages; use plain wording
 - [x] Full verification: typecheck clean, 13 tests pass, build OK, browser screenshots of all pages
+- [x] User request: 3-subconductor bundles get an arrangement choice — straight line (d, 2d, …) or equilateral triangle; reference problem reproduces Ds = 0.0824 m
+- [x] User request: double-circuit conductors are freely placeable (draggable diagram dots, custom coords); reference two-row problem reproduces Deq = 10.33 m, L = 8.43e-4 mH/km
+- [x] Verification after both fixes: 21 tests pass, typecheck clean, drag + bundle option confirmed in the live preview
