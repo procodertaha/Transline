@@ -11,3 +11,4 @@
 - [x] User request: 3-subconductor bundles get an arrangement choice — straight line (d, 2d, …) or equilateral triangle; reference problem reproduces Ds = 0.0824 m
 - [x] User request: double-circuit conductors are freely placeable (draggable diagram dots, custom coords); reference two-row problem reproduces Deq = 10.33 m, L = 8.43e-4 mH/km
 - [x] Verification after both fixes: 21 tests pass, typecheck clean, drag + bundle option confirmed in the live preview
+- [ ] Add a separate Line Performance page for short, nominal-π, nominal-T, and exact long-line models using the uploaded class example, while preserving Calculator and Learn.
