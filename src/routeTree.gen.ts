@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LearnRouteImport } from './routes/learn'
+import { Route as LinePerformanceRouteImport } from './routes/line-performance'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const LearnRoute = LearnRouteImport.update({
   path: '/learn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LinePerformanceRoute = LinePerformanceRouteImport.update({
+  id: '/line-performance',
+  path: '/line-performance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/learn': typeof LearnRoute
+  '/line-performance': typeof LinePerformanceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/learn': typeof LearnRoute
+  '/line-performance': typeof LinePerformanceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/learn': typeof LearnRoute
+  '/line-performance': typeof LinePerformanceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/learn'
+  fullPaths: '/' | '/learn' | '/line-performance'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/learn'
-  id: '__root__' | '/' | '/learn'
+  to: '/' | '/learn' | '/line-performance'
+  id: '__root__' | '/' | '/learn' | '/line-performance'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LearnRoute: typeof LearnRoute
+  LinePerformanceRoute: typeof LinePerformanceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LearnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/line-performance': {
+      id: '/line-performance'
+      path: '/line-performance'
+      fullPath: '/line-performance'
+      preLoaderRoute: typeof LinePerformanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LearnRoute: LearnRoute,
+  LinePerformanceRoute: LinePerformanceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

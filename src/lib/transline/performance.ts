@@ -44,6 +44,7 @@ export interface PerformanceResult {
   noLoadChargingCurrentA: number;
   ferrantiRisePercent: number;
   abcdDeterminant: Complex;
+  equivalentPi?: { seriesImpedance: Complex; shuntAdmittanceHalf: Complex };
 }
 
 const c = (re = 0, im = 0): Complex => ({ re, im });
@@ -144,6 +145,20 @@ function constantsFor(input: PerformanceInput, model: PerformanceModel): { abcd:
   };
 }
 
+function longLineEquivalentPi(input: PerformanceInput): { seriesImpedance: Complex; shuntAdmittanceHalf: Complex } {
+  const omega = 2 * Math.PI * input.frequencyHz;
+  const zPerKm = c(input.resistanceOhmKm, omega * input.inductanceMhKm * 1e-3);
+  const yPerKm = c(0, omega * input.capacitanceNfKm * 1e-9);
+  const gammaLength = scale(sqrtComplex(mul(zPerKm, yPerKm)), input.lengthKm);
+  const characteristicImpedance = sqrtComplex(div(zPerKm, yPerKm));
+  const seriesImpedance = mul(characteristicImpedance, sinhComplex(gammaLength));
+  const halfGamma = scale(gammaLength, 0.5);
+  const sinhHalf = sinhComplex(halfGamma);
+  const coshHalf = coshComplex(halfGamma);
+  const tanhHalf = div(sinhHalf, coshHalf);
+  return { seriesImpedance, shuntAdmittanceHalf: div(tanhHalf, characteristicImpedance) };
+}
+
 export function calculatePerformance(input: PerformanceInput, model: PerformanceModel): PerformanceResult {
   const errors = validatePerformanceInput(input);
   if (errors.length) throw new Error(errors.join(" "));
@@ -192,6 +207,7 @@ export function calculatePerformance(input: PerformanceInput, model: Performance
     noLoadChargingCurrentA: magnitude(noLoadCurrent),
     ferrantiRisePercent: ((noLoadVoltage - magnitude(sendingVoltagePhase)) / magnitude(sendingVoltagePhase)) * 100,
     abcdDeterminant: sub(mul(abcd.A, abcd.D), mul(abcd.B, abcd.C)),
+    ...(model === "long" ? { equivalentPi: longLineEquivalentPi(input) } : {}),
   };
 }
 
