@@ -118,7 +118,7 @@ function Index() {
     try {
       localStorage.setItem(
         "transline-performance-parameters",
-        JSON.stringify({ inductanceMhKm: res.lPrim * 1e6, capacitanceNfKm: res.cnPerKm * 1e12 }),
+        JSON.stringify({ inductanceMhKm: res.lPrim * 1e6, capacitanceNfKm: res.cnPerKm * 1e9 }),
       );
     } catch {
       // Keep the calculator usable if browser storage is unavailable.
