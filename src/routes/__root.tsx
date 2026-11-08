@@ -47,6 +47,7 @@ function Header() {
   const links = [
     { to: "/", label: "Calculator" },
     { to: "/learn", label: "Learn" },
+    { to: "/line-performance", label: "Line Performance" },
   ] as const;
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">

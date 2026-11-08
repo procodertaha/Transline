@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, CircleCheck, Zap } from "lucide-react";
 import { computeLine } from "@/lib/transline/calc";
@@ -112,6 +112,18 @@ function Index() {
   const [cfg, setCfg] = useState<LineConfig>(defaultConfig);
   const [tab, setTab] = useState<"ind" | "cap">("ind");
   const res = useMemo(() => computeLine(cfg), [cfg]);
+
+  useEffect(() => {
+    if (res.errors.length > 0) return;
+    try {
+      localStorage.setItem(
+        "transline-performance-parameters",
+        JSON.stringify({ inductanceMhKm: res.lPrim * 1e6, capacitanceNfKm: res.cnPerKm * 1e12 }),
+      );
+    } catch {
+      // Keep the calculator usable if browser storage is unavailable.
+    }
+  }, [res]);
 
   const update = (patch: Partial<LineConfig>) => {
     setCfg((prev) => {
