@@ -46,9 +46,11 @@ export interface LineConfig {
   freq: 50 | 60;
   lengthKm: number;
   voltageKV: number; // line-to-line
-  layout: "equilateral" | "horizontal" | "custom";
+  layout: "equilateral" | "horizontal" | "asymmetric" | "custom";
   doublePreset: DoublePreset;
   spacingD: number; // metres
+  /** Phase-to-phase distances for an asymmetric three-phase triangle, in metres. */
+  phaseDistances: { ab: number; bc: number; ca: number };
   heightM: number; // metres above ground (presets)
   coords: Vec2[]; // used when layout/preset is "custom"
   earthEffect: boolean;

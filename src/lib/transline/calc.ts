@@ -1,5 +1,5 @@
 import { EPS0, MILE, SOLID_FACTOR, STRAND_FACTOR, dist } from "./constants";
-import { buildCoords, groupsFor, labelsFor } from "./config";
+import { buildCoords, groupsFor, isValidAsymmetricTriangle, labelsFor } from "./config";
 import type { BundleArrangement, LineConfig, Vec2 } from "./types";
 import { fmtTex } from "./format";
 
@@ -55,6 +55,9 @@ const R = String.raw;
 
 export function validate(cfg: LineConfig, coords: Vec2[]): string[] {
   const errors: string[] = [];
+  if (cfg.system === "three" && cfg.circuit === "single" && cfg.layout === "asymmetric" && !isValidAsymmetricTriangle(cfg)) {
+    errors.push("Asymmetric phase spacings must be positive and satisfy the triangle inequality.");
+  }
   if (!(cfg.radius > 0)) errors.push("Conductor radius must be positive.");
   if (cfg.conductorType === "acsr" && !cfg.acsrUseSolid && !(cfg.acsrDs > 0))
     errors.push("Enter the manufacturer GMR (Ds) for the ACSR conductor.");

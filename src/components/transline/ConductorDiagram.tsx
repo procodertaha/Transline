@@ -27,6 +27,7 @@ export function ConductorDiagram({
   className = "",
   editable = false,
   onMove,
+  showPairDistances = false,
 }: {
   coords: Vec2[];
   labels: string[];
@@ -37,6 +38,8 @@ export function ConductorDiagram({
   editable?: boolean;
   /** Called with the conductor index and its new position in metres. */
   onMove?: (i: number, x: number, y: number) => void;
+  /** Show measured pair distances in metres for a three-phase single circuit. */
+  showPairDistances?: boolean;
 }) {
   const dragIndex = useRef<number | null>(null);
   const frozen = useRef<FrozenBounds | null>(null);
@@ -145,6 +148,44 @@ export function ConductorDiagram({
             opacity={0.7}
           />
         ))}
+      {showPairDistances && coords.length === 3 && (
+        <g aria-hidden="true">
+          {([[0, 1], [1, 2], [2, 0]] as const).map(([i, j]) => {
+            const a = coords[i];
+            const b = coords[j];
+            if (!a || !b) return null;
+            const ax = px(a);
+            const ay = py(a);
+            const bx = px(b);
+            const by = py(b);
+            const dx = bx - ax;
+            const dy = by - ay;
+            const length = Math.hypot(dx, dy) || 1;
+            const offset = 12;
+            const mx = (ax + bx) / 2 + (dy / length) * offset;
+            const my = (ay + by) / 2 - (dx / length) * offset;
+            const metres = Math.hypot(a.x - b.x, a.y - b.y);
+            return (
+              <text
+                key={`${i}-${j}`}
+                x={mx}
+                y={my}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="fill-muted-foreground pointer-events-none"
+                fontSize={11}
+                fontFamily="var(--font-mono)"
+                stroke="var(--color-card)"
+                strokeWidth={4}
+                strokeLinejoin="round"
+                paintOrder="stroke"
+              >
+                {metres.toPrecision(3)} m
+              </text>
+            );
+          })}
+        </g>
+      )}
       {coords.map((p, i) => {
         const gi = groupOf.get(i) ?? 0;
         return (
