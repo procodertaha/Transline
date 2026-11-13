@@ -54,6 +54,7 @@ export function defaultConfig(): LineConfig {
     layout: "horizontal",
     doublePreset: "vertical",
     spacingD: 5,
+    phaseDistances: { ab: 5, bc: 5, ca: 5 },
     heightM: 10,
     coords: [],
     earthEffect: false,
@@ -94,6 +95,25 @@ export function buildCoords(cfg: LineConfig): Vec2[] {
           { x: D, y: H },
           { x: 2 * D, y: H },
         ];
+      case "asymmetric": {
+        const { ab, bc, ca } = cfg.phaseDistances;
+        const valid = [ab, bc, ca].every((d) => Number.isFinite(d) && d > 0) &&
+          ab + bc > ca && ab + ca > bc && bc + ca > ab;
+        if (!valid) {
+          return [
+            { x: 0, y: H + (Math.sqrt(3) / 2) * D },
+            { x: -D / 2, y: H },
+            { x: D / 2, y: H },
+          ];
+        }
+        const x = (ab * ab + bc * bc - ca * ca) / (2 * bc);
+        const y = Math.sqrt(Math.max(0, ab * ab - x * x));
+        return [
+          { x, y: H + y },
+          { x: 0, y: H },
+          { x: bc, y: H },
+        ];
+      }
       default:
         return cfg.coords;
     }
@@ -132,6 +152,13 @@ export function buildCoords(cfg: LineConfig): Vec2[] {
     default:
       return cfg.coords;
   }
+}
+
+/** Whether the three entered phase spacings can form a non-degenerate triangle. */
+export function isValidAsymmetricTriangle(cfg: LineConfig): boolean {
+  const { ab, bc, ca } = cfg.phaseDistances;
+  return [ab, bc, ca].every((d) => Number.isFinite(d) && d > 0) &&
+    ab + bc > ca && ab + ca > bc && bc + ca > ab;
 }
 
 /** True when the current config is the built-in self-check example. */

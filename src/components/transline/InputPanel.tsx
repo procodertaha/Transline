@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { buildCoords, labelsFor } from "@/lib/transline/config";
+import { buildCoords, isValidAsymmetricTriangle, labelsFor } from "@/lib/transline/config";
 import { STRAND_FACTOR } from "@/lib/transline/constants";
 import type { CalcResult } from "@/lib/transline/calc";
 import { fmtUi } from "@/lib/transline/format";
@@ -416,6 +416,7 @@ export function InputPanel({
               options={[
                 { label: "Equilateral", value: "equilateral" },
                 { label: "Horizontal", value: "horizontal" },
+                { label: "Asymmetric distances", value: "asymmetric" },
                 { label: "Custom (x, y)", value: "custom" },
               ]}
               value={cfg.layout}
@@ -450,6 +451,45 @@ export function InputPanel({
               unit={dUnit}
               onUnitChange={setDUnit}
             />
+            <UnitField
+              label="Height above ground"
+              value={cfg.heightM}
+              onChange={(v) => update({ heightM: v })}
+              unit={hUnit}
+              onUnitChange={setHUnit}
+            />
+          </div>
+        )}
+        {cfg.system === "three" && cfg.circuit === "single" && cfg.layout === "asymmetric" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <UnitField
+                label="Distance A–B"
+                value={cfg.phaseDistances.ab}
+                onChange={(ab) => update({ phaseDistances: { ...cfg.phaseDistances, ab } })}
+                unit={dUnit}
+                onUnitChange={setDUnit}
+              />
+              <UnitField
+                label="Distance B–C"
+                value={cfg.phaseDistances.bc}
+                onChange={(bc) => update({ phaseDistances: { ...cfg.phaseDistances, bc } })}
+                unit={dUnit}
+                onUnitChange={setDUnit}
+              />
+              <UnitField
+                label="Distance C–A"
+                value={cfg.phaseDistances.ca}
+                onChange={(ca) => update({ phaseDistances: { ...cfg.phaseDistances, ca } })}
+                unit={dUnit}
+                onUnitChange={setDUnit}
+              />
+            </div>
+            {!isValidAsymmetricTriangle(cfg) && (
+              <p role="alert" className="text-xs text-destructive">
+                Enter three positive distances that can form a triangle: the sum of any two must exceed the third.
+              </p>
+            )}
             <UnitField
               label="Height above ground"
               value={cfg.heightM}

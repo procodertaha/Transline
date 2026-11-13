@@ -186,3 +186,29 @@ describe("3-phase double circuit, two flat rows (reference problem)", () => {
     expect(res.lPrim * 1e6).toBeCloseTo(0.8427, 3);
   });
 });
+
+describe("asymmetric three-phase single-circuit spacing", () => {
+  const cfg = {
+    ...defaultConfig(),
+    system: "three" as const,
+    circuit: "single" as const,
+    conductorType: "solid" as const,
+    radius: 0.01,
+    layout: "asymmetric" as const,
+    heightM: 12,
+    phaseDistances: { ab: 20 * 0.3048, bc: 38 * 0.3048, ca: 20 * 0.3048 },
+  };
+
+  it("places the three phases at the entered unequal distances", () => {
+    const result = computeLine(cfg);
+    expect(result.errors).toEqual([]);
+    expect(result.distances[0]?.[1]).toBeCloseTo(20 * 0.3048, 10);
+    expect(result.distances[1]?.[2]).toBeCloseTo(38 * 0.3048, 10);
+    expect(result.distances[2]?.[0]).toBeCloseTo(20 * 0.3048, 10);
+  });
+
+  it("rejects spacings that cannot form a triangle", () => {
+    const result = computeLine({ ...cfg, phaseDistances: { ab: 2, bc: 3, ca: 8 } });
+    expect(result.errors).toContain("Asymmetric phase spacings must be positive and satisfy the triangle inequality.");
+  });
+});
