@@ -101,6 +101,7 @@ function UnitField({
           }
           onChange={(e) => onChange(parseFloat(e.target.value) * factor)}
           className={inputCls}
+          aria-label={label}
         />
         <UnitSelect
           value={unit}
