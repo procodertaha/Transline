@@ -12,3 +12,4 @@
 - [x] User request: double-circuit conductors are freely placeable (draggable diagram dots, custom coords); reference two-row problem reproduces Deq = 10.33 m, L = 8.43e-4 mH/km
 - [x] Verification after both fixes: 21 tests pass, typecheck clean, drag + bundle option confirmed in the live preview
 - [ ] Add a separate Line Performance page for short, nominal-π, nominal-T, and exact long-line models using the uploaded class example, while preserving Calculator and Learn.
+- [ ] Add an unequal three-phase triangle geometry with three unit-aware distances and label conductor separations on the diagram.
