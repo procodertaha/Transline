@@ -151,6 +151,13 @@ function Index() {
       } else if (patch.layout !== undefined || patch.doublePreset !== undefined) {
         next.coords = [];
       }
+      if (patch.layout === "asymmetric") {
+        next.phaseDistances = {
+          ab: prev.spacingD,
+          bc: prev.spacingD,
+          ca: prev.spacingD,
+        };
+      }
       return next;
     });
   };
@@ -362,6 +369,7 @@ function Index() {
                   groups={res.groups}
                   editable={editable}
                   onMove={moveCoord}
+                  showPairDistances={cfg.system === "three" && cfg.circuit === "single" && cfg.layout !== "horizontal" && cfg.layout !== "custom"}
                 />
                 <p className="mt-2 text-xs text-muted-foreground">
                   Conductor positions in metres (y = height above ground). Dashed
